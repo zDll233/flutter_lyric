@@ -32,7 +32,7 @@ class ParserLrc extends LyricsParse {
       }
       //移除time，拿到真实歌词
       var realLyrics = line.replaceFirst(pattern, "");
-      if(realLyrics.isEmpty) continue;
+      if(realLyrics == '') continue;
       //转时间戳
       var ts = timeTagToTS(time);
       LyricsLog.logD("匹配time:$time($ts) 真实歌词：$realLyrics");
