@@ -426,14 +426,14 @@ class LyricReaderState extends State<LyricsReader>
     waitTimer?.cancel();
     waitTimer = Timer.periodic(Duration(milliseconds: 100), (timer) {
       waitSecond += 100;
-      if (waitSecond == 400) {
+      /*if (waitSecond == 400) {
         realUpdateOffset(widget.model?.computeScroll(
                 lyricPaint.centerLyricIndex,
                 lyricPaint.playingIndex,
                 widget.ui) ??
             0);
         return;
-      }
+      }*/
       // scroll to play line only when playing
       if (widget.playing == true && waitSecond == 3000) {
         disposeSelectLineDelay();
