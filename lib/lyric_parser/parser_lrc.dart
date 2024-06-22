@@ -32,12 +32,11 @@ class ParserLrc extends LyricsParse {
       }
       //移除time，拿到真实歌词
       var realLyrics = line.replaceFirst(pattern, "");
-      final skip = String.fromCharCodes([32, 13]);
+      final skip = String.fromCharCodes([32, 13]); // 空格 回车
       if(realLyrics == skip) continue;
       //转时间戳
       var ts = timeTagToTS(time);
-      //LyricsLog.logD("匹配time:$time($ts) 真实歌词：$realLyrics");
-      print('time:$time($ts) lrc:${realLyrics.codeUnits}, $realLyrics, ${realLyrics.length}');
+      LyricsLog.logD("匹配time:$time($ts) 真实歌词：$realLyrics");
       var lineModel = LyricsLineModel()..startTime = ts;
       if (realLyrics == "//") {
         LyricsLog.logD("移除无效字符：//");
