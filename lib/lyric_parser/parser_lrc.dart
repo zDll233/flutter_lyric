@@ -36,7 +36,7 @@ class ParserLrc extends LyricsParse {
       //转时间戳
       var ts = timeTagToTS(time);
       //LyricsLog.logD("匹配time:$time($ts) 真实歌词：$realLyrics");
-      print('time:$time($ts) lrc:${realLyrics == " "}');
+      print('time:$time($ts) lrc:${realLyrics.codeUnits}, $realLyrics, ${realLyrics.length}');
       var lineModel = LyricsLineModel()..startTime = ts;
       if (realLyrics == "//") {
         LyricsLog.logD("移除无效字符：//");
