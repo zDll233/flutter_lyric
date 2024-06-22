@@ -113,6 +113,7 @@ class LyricReaderState extends State<LyricsReader>
       } else {
         if (widget.playing == true) {
           _highlightController?.forward();
+          resumeSelectLineOffset();
         } else {
           _highlightController?.stop();
         }
@@ -174,11 +175,10 @@ class LyricReaderState extends State<LyricsReader>
           disposeLine();
         }
       });
-    animate
-      ..addListener(() {
-        var value = animate.value;
-        lyricPaint.lyricOffset = value.clamp(lyricPaint.maxOffset, 0);
-      });
+    animate.addListener(() {
+      var value = animate.value;
+      lyricPaint.lyricOffset = value.clamp(lyricPaint.maxOffset, 0);
+    });
     _lineController?.forward();
   }
 
@@ -215,12 +215,10 @@ class LyricReaderState extends State<LyricsReader>
   /// 获取文本高度
   TextPainter getTextPaint(String? text, TextStyle style,
       {Size? size, TextPainter? linePaint}) {
-    if (text == null) text = "";
-    if (linePaint == null) {
-      linePaint = TextPainter(
-        textDirection: TextDirection.ltr,
-      );
-    }
+    text ??= "";
+    linePaint ??= TextPainter(
+      textDirection: TextDirection.ltr,
+    );
     linePaint.textAlign = lyricPaint.lyricUI.getLyricTextAligin();
     linePaint
       ..text = TextSpan(text: text, style: style)
@@ -234,7 +232,7 @@ class LyricReaderState extends State<LyricsReader>
     var targetLineHeight = 0.0;
     var start = 0;
     List<LyricInlineDrawInfo> lineList = [];
-    metrics.forEach((element) {
+    for (var element in metrics) {
       //起始偏移量X
       var startOffsetX = 0.0;
       switch (ui.getLyricTextAligin()) {
@@ -271,7 +269,7 @@ class LyricReaderState extends State<LyricsReader>
         ..offset = Offset(startOffsetX, targetLineHeight));
       start = end;
       targetLineHeight += element.height;
-    });
+    }
     drawInfo.inlineDrawList = lineList;
   }
 
@@ -349,42 +347,49 @@ class LyricReaderState extends State<LyricsReader>
   }
 
   ///support touch event
-Widget buildTouchReader(Widget child) {
-  return Listener(
-    onPointerSignal: (pointerSignal) {
-      if (pointerSignal is PointerScrollEvent) {
-        // 处理滚轮事件，更新歌词的偏移量
-        lyricPaint.lyricOffset -= pointerSignal.scrollDelta.dy;
-        lyricPaint.lyricOffset = lyricPaint.lyricOffset.clamp(lyricPaint.maxOffset, 0);
-        setState(() {});
-      }
-    },
-    child: GestureDetector(
-      onVerticalDragEnd: handleDragEnd,
-      onTap: widget.onTap,
-      onTapDown: (event) {
-        disposeSelectLineDelay();
-        disposeFiling();
-        isDrag = true;
-      },
-      onTapUp: (event) {
-        isDrag = false;
-        resumeSelectLineOffset();
-      },
-      onVerticalDragStart: (event) {
-        disposeFiling();
-        disposeSelectLineDelay();
-        setSelectLine(true);
-      },
-      onVerticalDragUpdate: (event) {
-        lyricPaint.lyricOffset += event.primaryDelta ?? 0;
-        setState(() {});
-      },
-      child: child,
-    ),
-  );
-}
+  Widget buildTouchReader(Widget child) {
+    return Listener(
+      onPointerSignal: (pointerSignal) {
+        if (pointerSignal is PointerScrollEvent) {
+          changeOffsetStart();
 
+          lyricPaint.lyricOffset -= pointerSignal.scrollDelta.dy;
+          lyricPaint.lyricOffset =
+              lyricPaint.lyricOffset.clamp(lyricPaint.maxOffset, 0);
+          setState(() {});
+
+          resumeSelectLineOffset();
+        }
+      },
+      child: GestureDetector(
+        onTap: widget.onTap,
+        onTapDown: (event) {
+          disposeSelectLineDelay();
+          disposeFiling();
+          isDrag = true;
+        },
+        onTapUp: (event) {
+          isDrag = false;
+          resumeSelectLineOffset();
+        },
+        onVerticalDragStart: (event) {
+          changeOffsetStart();
+        },
+        onVerticalDragUpdate: (event) {
+          lyricPaint.lyricOffset += event.primaryDelta ?? 0;
+          setState(() {});
+        },
+        onVerticalDragEnd: handleDragEnd,
+        child: child,
+      ),
+    );
+  }
+
+  void changeOffsetStart() {
+    disposeFiling();
+    disposeSelectLineDelay();
+    setSelectLine(true);
+  }
 
   handleDragEnd(DragEndDetails event) {
     isDrag = false;
@@ -419,7 +424,7 @@ Widget buildTouchReader(Widget child) {
     isWait = true;
     var waitSecond = 0;
     waitTimer?.cancel();
-    waitTimer = new Timer.periodic(Duration(milliseconds: 100), (timer) {
+    waitTimer = Timer.periodic(Duration(milliseconds: 100), (timer) {
       waitSecond += 100;
       if (waitSecond == 400) {
         realUpdateOffset(widget.model?.computeScroll(
@@ -429,7 +434,8 @@ Widget buildTouchReader(Widget child) {
             0);
         return;
       }
-      if (waitSecond == 3000) {
+      // scroll to play line only when playing
+      if (widget.playing == true && waitSecond == 3000) {
         disposeSelectLineDelay();
         setSelectLine(false);
         scrollToPlayLine();
@@ -471,14 +477,14 @@ Widget buildTouchReader(Widget child) {
   void setTextSpanDrawInfo(
       LyricUI ui, List<LyricSpanInfo> spanList, TextPainter painter) {
     painter.textAlign = lyricPaint.lyricUI.getLyricTextAligin();
-    spanList.forEach((element) {
+    for (var element in spanList) {
       painter
         ..text =
             TextSpan(text: element.raw, style: ui.getPlayingMainTextStyle())
         ..layout();
       element.drawHeight = painter.height;
       element.drawWidth = painter.width;
-    });
+    }
   }
 
   /// enable highlight animation
