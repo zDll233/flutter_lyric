@@ -14,6 +14,7 @@ class UINetease extends LyricUI {
   LyricAlign lyricAlign;
   LyricBaseLine lyricBaseLine;
   bool highlight;
+  Color? highLightTextColor;
   HighlightDirection highlightDirection;
 
   UINetease(
@@ -26,6 +27,7 @@ class UINetease extends LyricUI {
       this.lyricAlign = LyricAlign.CENTER,
       this.lyricBaseLine = LyricBaseLine.CENTER,
       this.highlight = true,
+      this.highLightTextColor,
       this.highlightDirection = HighlightDirection.LTR});
 
   UINetease.clone(UINetease uiNetease)
@@ -82,4 +84,7 @@ class UINetease extends LyricUI {
 
   @override
   HighlightDirection getHighlightDirection() => highlightDirection;
+
+  @override
+  Color getLyricHightlightColor() => highLightTextColor ?? super.getLyricHightlightColor();
 }
