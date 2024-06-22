@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_lyric/lyric_ui/lyric_ui.dart';
 import 'package:flutter_lyric/lyric_ui/ui_netease.dart';
@@ -348,8 +349,17 @@ class LyricReaderState extends State<LyricsReader>
   }
 
   ///support touch event
-  Widget buildTouchReader(child) {
-    return GestureDetector(
+Widget buildTouchReader(Widget child) {
+  return Listener(
+    onPointerSignal: (pointerSignal) {
+      if (pointerSignal is PointerScrollEvent) {
+        // 处理滚轮事件，更新歌词的偏移量
+        lyricPaint.lyricOffset += pointerSignal.scrollDelta.dy;
+        lyricPaint.lyricOffset = lyricPaint.lyricOffset.clamp(lyricPaint.maxOffset, 0);
+        setState(() {});
+      }
+    },
+    child: GestureDetector(
       onVerticalDragEnd: handleDragEnd,
       onTap: widget.onTap,
       onTapDown: (event) {
@@ -366,11 +376,15 @@ class LyricReaderState extends State<LyricsReader>
         disposeSelectLineDelay();
         setSelectLine(true);
       },
-      onVerticalDragUpdate: (event) =>
-          {lyricPaint.lyricOffset += event.primaryDelta ?? 0},
+      onVerticalDragUpdate: (event) {
+        lyricPaint.lyricOffset += event.primaryDelta ?? 0;
+        setState(() {});
+      },
       child: child,
-    );
-  }
+    ),
+  );
+}
+
 
   handleDragEnd(DragEndDetails event) {
     isDrag = false;
