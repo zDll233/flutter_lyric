@@ -354,7 +354,7 @@ Widget buildTouchReader(Widget child) {
     onPointerSignal: (pointerSignal) {
       if (pointerSignal is PointerScrollEvent) {
         // 处理滚轮事件，更新歌词的偏移量
-        lyricPaint.lyricOffset += pointerSignal.scrollDelta.dy;
+        lyricPaint.lyricOffset -= pointerSignal.scrollDelta.dy;
         lyricPaint.lyricOffset = lyricPaint.lyricOffset.clamp(lyricPaint.maxOffset, 0);
         setState(() {});
       }
