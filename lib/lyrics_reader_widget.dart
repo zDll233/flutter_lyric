@@ -353,9 +353,9 @@ class LyricReaderState extends State<LyricsReader>
         if (pointerSignal is PointerScrollEvent) {
           changeOffsetStart();
 
-          lyricPaint.lyricOffset -= pointerSignal.scrollDelta.dy;
           lyricPaint.lyricOffset =
-              lyricPaint.lyricOffset.clamp(lyricPaint.maxOffset, 0);
+              (lyricPaint.lyricOffset - pointerSignal.scrollDelta.dy)
+                  .clamp(lyricPaint.maxOffset, 0);
           setState(() {});
 
           resumeSelectLineOffset();
