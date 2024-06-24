@@ -21,6 +21,7 @@ class ParserLrc extends LyricsParse {
       return [];
     }
     List<LyricsLineModel> lineList = [];
+    final skip = String.fromCharCodes([32, 13]); // 空格 回车
     for (var line in lines) {
       //匹配time
       var time = pattern.stringMatch(line);
@@ -32,6 +33,7 @@ class ParserLrc extends LyricsParse {
       }
       //移除time，拿到真实歌词
       var realLyrics = line.replaceFirst(pattern, "");
+      if (realLyrics == skip) continue;
       //转时间戳
       var ts = timeTagToTS(time);
       LyricsLog.logD("匹配time:$time($ts) 真实歌词：$realLyrics");
