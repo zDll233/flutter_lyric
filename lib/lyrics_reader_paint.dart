@@ -138,16 +138,10 @@ class LyricsReaderPaint extends ChangeNotifier implements CustomPainter {
     }
   }
 
-  final skip = [
-    String.fromCharCodes([32, 13]),
-    String.fromCharCodes([13])
-  ]; // 空格 回车
-
   double drawLine(
       int i, double drawOffset, Canvas canvas, LyricsLineModel element) {
     //空行直接返回
-    if ((!element.hasMain || skip.any((e) => e == element.mainText)) &&
-        !element.hasExt) {
+    if (!element.hasMain && !element.hasExt ) {
       return lyricUI.getBlankLineHeight();
     }
     return _drawOtherLyricLine(canvas, drawOffset, element, i);
