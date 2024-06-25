@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:audioplayers/audioplayers.dart';
@@ -24,8 +25,11 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
 
   bool useEnhancedLrc = false;
   var lyricModel = LyricsModelBuilder.create()
-      .bindLyricToMain(normalLyric)
-      .bindLyricToExt(transLyric)
+      .bindLyricToMain(File(
+              "E:\\Media\\ACG\\音声\\Loved\\三森すずこ&和氣あず未&伊藤かな恵&三上枝織-（4）180秒で君の耳を幸せに出来るか 耳かきハーレムであまあまちゅっちゅご奉仕\\RJ01036704\\wav\\180a12_02_『掏耳（左耳）×竹风铃』.lrc")
+          .readAsStringSync())
+      // .bindLyricToMain(normalLyric)
+      // .bindLyricToExt(transLyric)
       .getModel();
 
   var lyricUI = UINetease();
