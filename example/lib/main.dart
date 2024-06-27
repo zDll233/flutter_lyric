@@ -76,7 +76,8 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
         ...buildReaderBackground(),
         LyricsReader(
           padding: EdgeInsets.symmetric(horizontal: lyricPadding),
-          scrollBack: false,
+          canFlashBack: true,
+          canScrollBack: true,
           waitMilliseconds: 5000,
           model: lyricModel,
           position: playProgress,
@@ -96,9 +97,10 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                     onPressed: () {
                       LyricsLog.logD("点击事件");
                       confirm.call();
-                      setState(() {
-                        audioPlayer?.seek(Duration(milliseconds: progress));
-                      });
+                      
+                      // setState(() {
+                      //   audioPlayer?.seek(Duration(milliseconds: progress));
+                      // });
                     },
                     icon: Icon(Icons.play_arrow, color: Colors.green)),
                 Expanded(

@@ -15,10 +15,15 @@ typedef SelectLineBuilder = Widget Function(int, VoidCallback);
 typedef EmptyBuilder = Widget? Function();
 
 ///Lyrics Reader Widget
+///
 ///[size] config widget size,default is screenWidth,screenWidth
+///
 ///[ui]  config lyric style
+///
 ///[position] music progress,unit is millisecond
+///
 ///[selectLineBuilder] call select line widget
+///
 ///[playing] if playing status is null,no highlight.
 ///
 class LyricsReader extends StatefulWidget {
@@ -32,7 +37,8 @@ class LyricsReader extends StatefulWidget {
   final SelectLineBuilder? selectLineBuilder;
   final EmptyBuilder? emptyBuilder;
   final int waitMilliseconds;
-  final bool scrollBack;
+  final bool canScrollBack;
+  final bool canFlashBack;
 
   @override
   State<StatefulWidget> createState() => LyricReaderState();
@@ -48,7 +54,8 @@ class LyricsReader extends StatefulWidget {
     this.playing,
     this.emptyBuilder,
     this.waitMilliseconds = 3000,
-    this.scrollBack = true,
+    this.canScrollBack = true,
+    this.canFlashBack = false,
   }) : ui = lyricUi ?? UINetease();
 }
 
@@ -365,6 +372,12 @@ class LyricReaderState extends State<LyricsReader>
           resumeSelectLineOffset();
         }
       },
+      onPointerDown: (pointerDownEvent) {
+        if (widget.canFlashBack &&
+            pointerDownEvent.buttons == kSecondaryMouseButton) {
+          changeOffsetEnd();
+        }
+      },
       child: GestureDetector(
         onTap: widget.onTap,
         onTapDown: (event) {
@@ -426,7 +439,7 @@ class LyricReaderState extends State<LyricsReader>
   ///handle select line
   resumeSelectLineOffset() {
     isWait = true;
-    if (!widget.scrollBack) return;
+    if (!widget.canScrollBack) return;
     var waitSecond = 0;
     waitTimer?.cancel();
     waitTimer = Timer.periodic(Duration(milliseconds: 100), (timer) {
@@ -440,11 +453,15 @@ class LyricReaderState extends State<LyricsReader>
         return;
       }*/
       if (waitSecond >= widget.waitMilliseconds) {
-        disposeSelectLineDelay();
-        setSelectLine(false);
-        scrollToPlayLine();
+        changeOffsetEnd();
       }
     });
+  }
+
+  void changeOffsetEnd() {
+    disposeSelectLineDelay();
+    setSelectLine(false);
+    scrollToPlayLine();
   }
 
   disposeSelectLineDelay() {
