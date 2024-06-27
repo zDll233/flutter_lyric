@@ -76,6 +76,8 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
         ...buildReaderBackground(),
         LyricsReader(
           padding: EdgeInsets.symmetric(horizontal: lyricPadding),
+          scrollBack: false,
+          waitMilliseconds: 5000,
           model: lyricModel,
           position: playProgress,
           lyricUi: lyricUI,

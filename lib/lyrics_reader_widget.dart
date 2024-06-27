@@ -31,6 +31,8 @@ class LyricsReader extends StatefulWidget {
   final VoidCallback? onTap;
   final SelectLineBuilder? selectLineBuilder;
   final EmptyBuilder? emptyBuilder;
+  final int waitMilliseconds;
+  final bool scrollBack;
 
   @override
   State<StatefulWidget> createState() => LyricReaderState();
@@ -45,6 +47,8 @@ class LyricsReader extends StatefulWidget {
     this.onTap,
     this.playing,
     this.emptyBuilder,
+    this.waitMilliseconds = 3000,
+    this.scrollBack = true,
   }) : ui = lyricUi ?? UINetease();
 }
 
@@ -422,6 +426,7 @@ class LyricReaderState extends State<LyricsReader>
   ///handle select line
   resumeSelectLineOffset() {
     isWait = true;
+    if (!widget.scrollBack) return;
     var waitSecond = 0;
     waitTimer?.cancel();
     waitTimer = Timer.periodic(Duration(milliseconds: 100), (timer) {
@@ -434,8 +439,7 @@ class LyricReaderState extends State<LyricsReader>
             0);
         return;
       }*/
-      // scroll to play line only when playing
-      if (widget.playing == true && waitSecond == 3000) {
+      if (waitSecond >= widget.waitMilliseconds) {
         disposeSelectLineDelay();
         setSelectLine(false);
         scrollToPlayLine();
