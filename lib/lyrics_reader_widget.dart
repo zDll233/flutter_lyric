@@ -36,8 +36,12 @@ class LyricsReader extends StatefulWidget {
   final VoidCallback? onTap;
   final SelectLineBuilder? selectLineBuilder;
   final EmptyBuilder? emptyBuilder;
+
+  /// scroll to play line after waitMilliseconds
   final int waitMilliseconds;
+  /// controll if able to scroll to play line after waitMilliseconds
   final bool canScrollBack;
+  /// controll if able to scroll to play line immediately after right click, not affected by [canScrollBack]
   final bool canFlashBack;
 
   @override
@@ -362,7 +366,7 @@ class LyricReaderState extends State<LyricsReader>
     return Listener(
       onPointerSignal: (pointerSignal) {
         if (pointerSignal is PointerScrollEvent) {
-          changeOffsetStart();
+          scrollStart();
 
           lyricPaint.lyricOffset =
               (lyricPaint.lyricOffset - pointerSignal.scrollDelta.dy)
@@ -375,7 +379,7 @@ class LyricReaderState extends State<LyricsReader>
       onPointerDown: (pointerDownEvent) {
         if (widget.canFlashBack &&
             pointerDownEvent.buttons == kSecondaryMouseButton) {
-          changeOffsetEnd();
+          scrollEnd();
         }
       },
       child: GestureDetector(
@@ -390,7 +394,7 @@ class LyricReaderState extends State<LyricsReader>
           resumeSelectLineOffset();
         },
         onVerticalDragStart: (event) {
-          changeOffsetStart();
+          scrollStart();
         },
         onVerticalDragUpdate: (event) {
           lyricPaint.lyricOffset += event.primaryDelta ?? 0;
@@ -402,7 +406,7 @@ class LyricReaderState extends State<LyricsReader>
     );
   }
 
-  void changeOffsetStart() {
+  void scrollStart() {
     disposeFiling();
     disposeSelectLineDelay();
     setSelectLine(true);
@@ -453,12 +457,12 @@ class LyricReaderState extends State<LyricsReader>
         return;
       }*/
       if (waitSecond >= widget.waitMilliseconds) {
-        changeOffsetEnd();
+        scrollEnd();
       }
     });
   }
 
-  void changeOffsetEnd() {
+  void scrollEnd() {
     disposeSelectLineDelay();
     setSelectLine(false);
     scrollToPlayLine();
