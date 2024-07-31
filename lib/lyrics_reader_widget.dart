@@ -131,7 +131,6 @@ class LyricReaderState extends State<LyricsReader>
       } else {
         if (widget.playing == true) {
           _highlightController?.forward();
-          // resumeSelectLineOffset();
         } else {
           _highlightController?.stop();
         }
