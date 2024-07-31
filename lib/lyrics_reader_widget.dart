@@ -120,7 +120,7 @@ class LyricReaderState extends State<LyricsReader>
       handleHighlight();
     }
     if(widget.position==0){
-      scrollToPlayLine();
+      scrollEnd();
     }
     if (oldWidget.position != widget.position) {
       selectLineAndScrollToPlayLine();
