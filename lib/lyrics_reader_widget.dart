@@ -131,7 +131,7 @@ class LyricReaderState extends State<LyricsReader>
       } else {
         if (widget.playing == true) {
           _highlightController?.forward();
-          resumeSelectLineOffset();
+          // resumeSelectLineOffset();
         } else {
           _highlightController?.stop();
         }
@@ -451,6 +451,7 @@ class LyricReaderState extends State<LyricsReader>
     waitTimer?.cancel();
     waitTimer = Timer.periodic(Duration(milliseconds: 100), (timer) {
       waitSecond += 100;
+      // indicated line自动对齐到歌词行中间
       /*if (waitSecond == 400) {
         realUpdateOffset(widget.model?.computeScroll(
                 lyricPaint.centerLyricIndex,
