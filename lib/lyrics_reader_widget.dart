@@ -334,6 +334,7 @@ class LyricReaderState extends State<LyricsReader>
                   disposeFiling();
                   disposeSelectLineDelay();
                 }, () {
+                  disposeHighlight();
                   lyricPaint.highlightWidth = 0;
                   cacheLine = lyricPaint.playingIndex - 1;
                 });
