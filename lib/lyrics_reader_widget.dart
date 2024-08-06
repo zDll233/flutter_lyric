@@ -142,11 +142,12 @@ class LyricReaderState extends State<LyricsReader>
 
   void selectLineAndScrollToPlayLine([bool animation = true]) {
     selectLine(widget.model?.getCurrentLine(widget.position) ?? 0);
-    // remove if (cacheLine != lyricPaint.playingIndex)
-    lyricPaint.highlightWidth = 0;
-    cacheLine = lyricPaint.playingIndex;
-    handleHighlight();
-    scrollToPlayLine(animation);
+    if (cacheLine != lyricPaint.playingIndex) {
+      lyricPaint.highlightWidth = 0;
+      cacheLine = lyricPaint.playingIndex;
+      handleHighlight();
+      scrollToPlayLine(animation);
+    }
   }
 
   ///select current play line
@@ -330,6 +331,7 @@ class LyricReaderState extends State<LyricsReader>
                   setSelectLine(false);
                   disposeFiling();
                   disposeSelectLineDelay();
+                  handleHighlight();
                 });
               }),
         ),
