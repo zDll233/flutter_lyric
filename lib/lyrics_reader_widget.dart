@@ -321,12 +321,14 @@ class LyricReaderState extends State<LyricsReader>
           child: StreamBuilder<int>(
               stream: centerLyricIndexStream.stream,
               builder: (context, snapshot) {
-                var centerIndex = snapshot.data ?? 0;
+                var centerIndex = snapshot.data;
                 if (lyricPaint.model.isNullOrEmpty) {
                   return Container();
                 }
                 return widget.selectLineBuilder!.call(
-                    lyricPaint.model?.lyrics[centerIndex].startTime ?? 0,
+                    (centerIndex != null
+                        ? lyricPaint.model?.lyrics[centerIndex].startTime
+                        : widget.position)!,
                     () => scrollEnd(), () {
                   setSelectLine(false);
                   disposeFiling();

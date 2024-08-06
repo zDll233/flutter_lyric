@@ -111,9 +111,9 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                       LyricsLog.logD("点击事件");
                       go2SelectedLine.call();
 
-                      // setState(() {
-                      //   audioPlayer?.seek(Duration(milliseconds: progress));
-                      // });
+                      setState(() {
+                        audioPlayer?.seek(Duration(milliseconds: progress));
+                      });
                     },
                     icon: Icon(Icons.play_arrow, color: Colors.green)),
                 Text(
