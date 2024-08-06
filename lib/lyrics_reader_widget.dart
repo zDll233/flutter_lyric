@@ -11,7 +11,8 @@ import 'package:flutter_lyric/lyrics_reader_paint.dart';
 ///SelectLineBuilder
 ///[int] is select progress
 ///[VoidCallback] call VoidCallback.call(),select current
-typedef SelectLineBuilder = Widget Function(int, VoidCallback, VoidCallback);
+typedef SelectLineBuilder = Widget Function(
+    int, VoidCallback, VoidCallback, VoidCallback);
 typedef EmptyBuilder = Widget? Function();
 
 ///Lyrics Reader Widget
@@ -331,6 +332,8 @@ class LyricReaderState extends State<LyricsReader>
                   setSelectLine(false);
                   disposeFiling();
                   disposeSelectLineDelay();
+                }, () {
+                  lyricPaint.highlightWidth = 0;
                   handleHighlight();
                 });
               }),

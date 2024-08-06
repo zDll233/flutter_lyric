@@ -89,7 +89,8 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
               style: lyricUI.getOtherMainTextStyle(),
             ),
           ),
-          selectLineBuilder: (progress, flashBack, disposeSelectedLine) {
+          selectLineBuilder:
+              (progress, flashBack, disposeSelectedLine, resetHighlight) {
             return Row(
               children: [
                 IconButton(
@@ -114,6 +115,8 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                       setState(() {
                         audioPlayer?.seek(Duration(milliseconds: progress));
                       });
+
+                      resetHighlight.call();
                     },
                     icon: Icon(Icons.play_arrow, color: Colors.green)),
                 Text(
