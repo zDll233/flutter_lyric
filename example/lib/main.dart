@@ -89,7 +89,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
               style: lyricUI.getOtherMainTextStyle(),
             ),
           ),
-          selectLineBuilder: (progress, flashBack, go2SelectedLine) {
+          selectLineBuilder: (progress, flashBack, disposeSelectedLine) {
             return Row(
               children: [
                 IconButton(
@@ -109,7 +109,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                 IconButton(
                     onPressed: () {
                       LyricsLog.logD("点击事件");
-                      go2SelectedLine.call();
+                      disposeSelectedLine.call();
 
                       setState(() {
                         audioPlayer?.seek(Duration(milliseconds: progress));
