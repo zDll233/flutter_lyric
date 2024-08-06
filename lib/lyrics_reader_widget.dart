@@ -323,18 +323,19 @@ class LyricReaderState extends State<LyricsReader>
               stream: centerLyricIndexStream.stream,
               builder: (context, snapshot) {
                 var centerIndex = snapshot.data ?? lyricPaint.playingIndex;
+                var selectedStartTime =
+                    lyricPaint.model?.lyrics[centerIndex].startTime ?? 0;
                 if (lyricPaint.model.isNullOrEmpty) {
                   return Container();
                 }
-                return widget.selectLineBuilder!.call(
-                    lyricPaint.model?.lyrics[centerIndex].startTime ?? 0,
-                    () => scrollEnd(), () {
+                return widget.selectLineBuilder!
+                    .call(selectedStartTime, () => scrollEnd(), () {
                   setSelectLine(false);
                   disposeFiling();
                   disposeSelectLineDelay();
                 }, () {
                   lyricPaint.highlightWidth = 0;
-                  handleHighlight();
+                  cacheLine = lyricPaint.playingIndex - 1;
                 });
               }),
         ),
