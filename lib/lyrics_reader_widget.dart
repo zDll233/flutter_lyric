@@ -11,7 +11,7 @@ import 'package:flutter_lyric/lyrics_reader_paint.dart';
 ///SelectLineBuilder
 ///[int] is select progress
 ///[VoidCallback] call VoidCallback.call(),select current
-typedef SelectLineBuilder = Widget Function(int, VoidCallback);
+typedef SelectLineBuilder = Widget Function(int, VoidCallback, VoidCallback);
 typedef EmptyBuilder = Widget? Function();
 
 ///Lyrics Reader Widget
@@ -39,8 +39,10 @@ class LyricsReader extends StatefulWidget {
 
   /// scroll to play line after waitMilliseconds
   final int waitMilliseconds;
+
   /// controll if able to scroll to play line after waitMilliseconds
   final bool canScrollBack;
+
   /// controll if able to scroll to play line immediately after right click, not affected by [canScrollBack]
   final bool canFlashBack;
 
@@ -119,7 +121,7 @@ class LyricReaderState extends State<LyricsReader>
       scrollToPlayLine();
       handleHighlight();
     }
-    if(widget.position==0){
+    if (widget.position == 0) {
       scrollEnd();
     }
     if (oldWidget.position != widget.position) {
@@ -324,7 +326,8 @@ class LyricReaderState extends State<LyricsReader>
                   return Container();
                 }
                 return widget.selectLineBuilder!.call(
-                    lyricPaint.model?.lyrics[centerIndex].startTime ?? 0, () {
+                    lyricPaint.model?.lyrics[centerIndex].startTime ?? 0,
+                    () => scrollEnd(), () {
                   setSelectLine(false);
                   disposeFiling();
                   disposeSelectLineDelay();

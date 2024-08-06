@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:ui';
 
 import 'package:audioplayers/audioplayers.dart';
@@ -90,19 +89,16 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
               style: lyricUI.getOtherMainTextStyle(),
             ),
           ),
-          selectLineBuilder: (progress, confirm) {
+          selectLineBuilder: (progress, flashBack, go2SelectedLine) {
             return Row(
               children: [
                 IconButton(
-                    onPressed: () {
-                      LyricsLog.logD("点击事件");
-                      confirm.call();
-                      
-                      // setState(() {
-                      //   audioPlayer?.seek(Duration(milliseconds: progress));
-                      // });
-                    },
-                    icon: Icon(Icons.play_arrow, color: Colors.green)),
+                  onPressed: () {
+                    LyricsLog.logD("点击事件");
+                    flashBack.call();
+                  },
+                  icon: const Icon(Icons.location_searching),
+                ),
                 Expanded(
                   child: Container(
                     decoration: BoxDecoration(color: Colors.green),
@@ -110,6 +106,16 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                     width: double.infinity,
                   ),
                 ),
+                IconButton(
+                    onPressed: () {
+                      LyricsLog.logD("点击事件");
+                      go2SelectedLine.call();
+
+                      // setState(() {
+                      //   audioPlayer?.seek(Duration(milliseconds: progress));
+                      // });
+                    },
+                    icon: Icon(Icons.play_arrow, color: Colors.green)),
                 Text(
                   progress.toString(),
                   style: TextStyle(color: Colors.green),
