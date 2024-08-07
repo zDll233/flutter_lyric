@@ -119,3 +119,6 @@ app.*.symbols
 !/dev/ci/**/Gemfile.lock
 
 **/.fvm
+
+example/
+example - 副本/

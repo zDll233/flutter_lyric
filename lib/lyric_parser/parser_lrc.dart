@@ -26,7 +26,6 @@ class ParserLrc extends LyricsParse {
       var time = pattern.stringMatch(line);
       if (time == null) {
         //没有匹配到直接返回
-        //TODO 歌曲相关信息暂不处理
         LyricsLog.logD("忽略未匹配到Time：$line");
         continue;
       }

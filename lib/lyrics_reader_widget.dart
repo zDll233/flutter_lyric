@@ -333,11 +333,7 @@ class LyricReaderState extends State<LyricsReader>
                   setSelectLine(false);
                   disposeFiling();
                   disposeSelectLineDelay();
-                }, () {
-                  disposeHighlight();
-                  lyricPaint.highlightWidth = 0;
-                  cacheLine = lyricPaint.playingIndex - 1;
-                });
+                }, () => handleHighlight(currentPosition: selectedStartTime));
               }),
         ),
       ),
@@ -526,7 +522,9 @@ class LyricReaderState extends State<LyricsReader>
 
   /// enable highlight animation
   /// if playing status is null,no highlight.
-  void handleHighlight() {
+  void handleHighlight({int? currentPosition}) {
+    currentPosition ??= widget.position;
+
     var lyrics = widget.model?.lyrics;
     if (!widget.ui.enableHighlight() ||
         widget.playing == null ||
@@ -537,17 +535,17 @@ class LyricReaderState extends State<LyricsReader>
     var width = 0.0;
     double? firstBegin;
     final spans = line.spanList ?? line.defaultSpanList;
-    final blankTime = (line.startTime ?? 0) - widget.position;
+    final blankTime = (line.startTime ?? 0) - currentPosition;
     if (blankTime > 0) {
       items.add(TweenSequenceItem(
           tween: Tween(begin: 0.0, end: 0.0), weight: blankTime.toDouble()));
     }
     for (LyricSpanInfo element in spans) {
-      if (widget.position >= element.end) {
+      if (currentPosition >= element.end) {
         width += element.drawWidth;
         continue;
       }
-      var ratio = (widget.position - element.start) / element.duration;
+      var ratio = (currentPosition - element.start) / element.duration;
       if (ratio < 0) {
         ratio = 0;
       }
@@ -562,7 +560,7 @@ class LyricReaderState extends State<LyricsReader>
       lyricPaint.highlightWidth = width;
       return;
     }
-    final highlightDuration = (line.endTime ?? 0) - widget.position;
+    final highlightDuration = (line.endTime ?? 0) - currentPosition;
     _highlightController = AnimationController(
       duration:
           Duration(milliseconds: highlightDuration > 0 ? highlightDuration : 0),
