@@ -11,8 +11,7 @@ import 'package:flutter_lyric/lyrics_reader_paint.dart';
 ///SelectLineBuilder
 ///[int] is select progress
 ///[VoidCallback] call VoidCallback.call(),select current
-typedef SelectLineBuilder = Widget Function(
-    int, VoidCallback, VoidCallback);
+typedef SelectLineBuilder = Widget Function(int, VoidCallback, VoidCallback);
 typedef EmptyBuilder = Widget? Function();
 
 ///Lyrics Reader Widget
@@ -375,12 +374,10 @@ class LyricReaderState extends State<LyricsReader>
       onPointerSignal: (pointerSignal) {
         if (pointerSignal is PointerScrollEvent) {
           scrollStart();
-
           lyricPaint.lyricOffset =
               (lyricPaint.lyricOffset - pointerSignal.scrollDelta.dy)
                   .clamp(lyricPaint.maxOffset, 0);
           setState(() {});
-
           resumeSelectLineOffset();
         }
       },
@@ -389,6 +386,16 @@ class LyricReaderState extends State<LyricsReader>
             pointerDownEvent.buttons == kSecondaryMouseButton) {
           scrollEnd();
         }
+      },
+      onPointerPanZoomUpdate: (event) {
+        scrollStart();
+        lyricPaint.lyricOffset += event.panDelta.dy;
+        setState(() {});
+        resumeSelectLineOffset();
+      },
+      onPointerPanZoomEnd: (event) {
+        // PointerPanZoomUpdateEvent
+        // handleDragEnd();
       },
       child: GestureDetector(
         onTap: widget.onTap,
