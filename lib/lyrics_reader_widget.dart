@@ -393,10 +393,6 @@ class LyricReaderState extends State<LyricsReader>
         setState(() {});
         resumeSelectLineOffset();
       },
-      onPointerPanZoomEnd: (event) {
-        // PointerPanZoomUpdateEvent
-        // handleDragEnd();
-      },
       child: GestureDetector(
         onTap: widget.onTap,
         onTapDown: (event) {
