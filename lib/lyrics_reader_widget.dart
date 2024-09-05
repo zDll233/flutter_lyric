@@ -444,7 +444,7 @@ class LyricReaderState extends State<LyricsReader>
           resumeSelectLineOffset();
         }
       })
-      /// 惯性滚动模拟
+      // 惯性滚动模拟
       ..animateWith(ClampingScrollSimulation(
         position: lyricPaint.lyricOffset,
         velocity: event.primaryVelocity ?? 0,
