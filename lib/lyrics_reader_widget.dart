@@ -408,6 +408,7 @@ class LyricReaderState extends State<LyricsReader>
           scrollStart();
         },
         onVerticalDragUpdate: (event) {
+          scrollStart();
           lyricPaint.lyricOffset += event.primaryDelta ?? 0;
           setState(() {});
         },
@@ -443,6 +444,7 @@ class LyricReaderState extends State<LyricsReader>
           resumeSelectLineOffset();
         }
       })
+      /// 惯性滚动模拟
       ..animateWith(ClampingScrollSimulation(
         position: lyricPaint.lyricOffset,
         velocity: event.primaryVelocity ?? 0,
