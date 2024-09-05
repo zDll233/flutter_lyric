@@ -408,9 +408,9 @@ class LyricReaderState extends State<LyricsReader>
           scrollStart();
         },
         onVerticalDragUpdate: (event) {
-          scrollStart();
           lyricPaint.lyricOffset += event.primaryDelta ?? 0;
           setState(() {});
+          resumeSelectLineOffset();
         },
         onVerticalDragEnd: handleDragEnd,
         child: child,
