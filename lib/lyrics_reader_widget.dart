@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_lyric/lyric_ui/lyric_ui.dart';
 import 'package:flutter_lyric/lyric_ui/ui_netease.dart';
@@ -10,14 +11,19 @@ import 'package:flutter_lyric/lyrics_reader_paint.dart';
 ///SelectLineBuilder
 ///[int] is select progress
 ///[VoidCallback] call VoidCallback.call(),select current
-typedef SelectLineBuilder = Widget Function(int, VoidCallback);
+typedef SelectLineBuilder = Widget Function(int, VoidCallback, VoidCallback);
 typedef EmptyBuilder = Widget? Function();
 
 ///Lyrics Reader Widget
+///
 ///[size] config widget size,default is screenWidth,screenWidth
+///
 ///[ui]  config lyric style
+///
 ///[position] music progress,unit is millisecond
+///
 ///[selectLineBuilder] call select line widget
+///
 ///[playing] if playing status is null,no highlight.
 ///
 class LyricsReader extends StatefulWidget {
@@ -30,6 +36,15 @@ class LyricsReader extends StatefulWidget {
   final VoidCallback? onTap;
   final SelectLineBuilder? selectLineBuilder;
   final EmptyBuilder? emptyBuilder;
+
+  /// scroll to play line after waitMilliseconds
+  final int waitMilliseconds;
+
+  /// controll if able to scroll to play line after waitMilliseconds
+  final bool canScrollBack;
+
+  /// controll if able to scroll to play line immediately after right click, not affected by [canScrollBack]
+  final bool canFlashBack;
 
   @override
   State<StatefulWidget> createState() => LyricReaderState();
@@ -44,6 +59,9 @@ class LyricsReader extends StatefulWidget {
     this.onTap,
     this.playing,
     this.emptyBuilder,
+    this.waitMilliseconds = 3000,
+    this.canScrollBack = true,
+    this.canFlashBack = false,
   }) : ui = lyricUi ?? UINetease();
 }
 
@@ -102,6 +120,9 @@ class LyricReaderState extends State<LyricsReader>
       selectLine(widget.model?.getCurrentLine(widget.position) ?? 0);
       scrollToPlayLine();
       handleHighlight();
+    }
+    if (widget.position == 0) {
+      scrollEnd();
     }
     if (oldWidget.position != widget.position) {
       selectLineAndScrollToPlayLine();
@@ -173,11 +194,10 @@ class LyricReaderState extends State<LyricsReader>
           disposeLine();
         }
       });
-    animate
-      ..addListener(() {
-        var value = animate.value;
-        lyricPaint.lyricOffset = value.clamp(lyricPaint.maxOffset, 0);
-      });
+    animate.addListener(() {
+      var value = animate.value;
+      lyricPaint.lyricOffset = value.clamp(lyricPaint.maxOffset, 0);
+    });
     _lineController?.forward();
   }
 
@@ -214,12 +234,10 @@ class LyricReaderState extends State<LyricsReader>
   /// 获取文本高度
   TextPainter getTextPaint(String? text, TextStyle style,
       {Size? size, TextPainter? linePaint}) {
-    if (text == null) text = "";
-    if (linePaint == null) {
-      linePaint = TextPainter(
-        textDirection: TextDirection.ltr,
-      );
-    }
+    text ??= "";
+    linePaint ??= TextPainter(
+      textDirection: TextDirection.ltr,
+    );
     linePaint.textAlign = lyricPaint.lyricUI.getLyricTextAligin();
     linePaint
       ..text = TextSpan(text: text, style: style)
@@ -233,7 +251,7 @@ class LyricReaderState extends State<LyricsReader>
     var targetLineHeight = 0.0;
     var start = 0;
     List<LyricInlineDrawInfo> lineList = [];
-    metrics.forEach((element) {
+    for (var element in metrics) {
       //起始偏移量X
       var startOffsetX = 0.0;
       switch (ui.getLyricTextAligin()) {
@@ -270,7 +288,7 @@ class LyricReaderState extends State<LyricsReader>
         ..offset = Offset(startOffsetX, targetLineHeight));
       start = end;
       targetLineHeight += element.height;
-    });
+    }
     drawInfo.inlineDrawList = lineList;
   }
 
@@ -303,15 +321,18 @@ class LyricReaderState extends State<LyricsReader>
           child: StreamBuilder<int>(
               stream: centerLyricIndexStream.stream,
               builder: (context, snapshot) {
-                var centerIndex = snapshot.data ?? 0;
+                var centerIndex = snapshot.data ?? lyricPaint.playingIndex;
+                var selectedStartTime =
+                    lyricPaint.model?.lyrics[centerIndex].startTime ?? 0;
                 if (lyricPaint.model.isNullOrEmpty) {
                   return Container();
                 }
-                return widget.selectLineBuilder!.call(
-                    lyricPaint.model?.lyrics[centerIndex].startTime ?? 0, () {
+                return widget.selectLineBuilder!
+                    .call(selectedStartTime, () => scrollEnd(), () {
                   setSelectLine(false);
                   disposeFiling();
                   disposeSelectLineDelay();
+                  handleHighlight(currentPosition: selectedStartTime);
                 });
               }),
         ),
@@ -348,28 +369,59 @@ class LyricReaderState extends State<LyricsReader>
   }
 
   ///support touch event
-  Widget buildTouchReader(child) {
-    return GestureDetector(
-      onVerticalDragEnd: handleDragEnd,
-      onTap: widget.onTap,
-      onTapDown: (event) {
-        disposeSelectLineDelay();
-        disposeFiling();
-        isDrag = true;
+  Widget buildTouchReader(Widget child) {
+    return Listener(
+      onPointerSignal: (pointerSignal) {
+        if (pointerSignal is PointerScrollEvent) {
+          scrollStart();
+          lyricPaint.lyricOffset =
+              (lyricPaint.lyricOffset - pointerSignal.scrollDelta.dy)
+                  .clamp(lyricPaint.maxOffset, 0);
+          setState(() {});
+          resumeSelectLineOffset();
+        }
       },
-      onTapUp: (event) {
-        isDrag = false;
+      onPointerDown: (pointerDownEvent) {
+        if (widget.canFlashBack &&
+            pointerDownEvent.buttons == kSecondaryMouseButton) {
+          scrollEnd();
+        }
+      },
+      onPointerPanZoomUpdate: (event) {
+        scrollStart();
+        lyricPaint.lyricOffset += event.panDelta.dy;
+        setState(() {});
         resumeSelectLineOffset();
       },
-      onVerticalDragStart: (event) {
-        disposeFiling();
-        disposeSelectLineDelay();
-        setSelectLine(true);
-      },
-      onVerticalDragUpdate: (event) =>
-          {lyricPaint.lyricOffset += event.primaryDelta ?? 0},
-      child: child,
+      child: GestureDetector(
+        onTap: widget.onTap,
+        onTapDown: (event) {
+          disposeSelectLineDelay();
+          disposeFiling();
+          isDrag = true;
+        },
+        onTapUp: (event) {
+          isDrag = false;
+          resumeSelectLineOffset();
+        },
+        onVerticalDragStart: (event) {
+          scrollStart();
+        },
+        onVerticalDragUpdate: (event) {
+          lyricPaint.lyricOffset += event.primaryDelta ?? 0;
+          setState(() {});
+          resumeSelectLineOffset();
+        },
+        onVerticalDragEnd: handleDragEnd,
+        child: child,
+      ),
     );
+  }
+
+  void scrollStart() {
+    disposeFiling();
+    disposeSelectLineDelay();
+    setSelectLine(true);
   }
 
   handleDragEnd(DragEndDetails event) {
@@ -392,6 +444,7 @@ class LyricReaderState extends State<LyricsReader>
           resumeSelectLineOffset();
         }
       })
+      // 惯性滚动模拟
       ..animateWith(ClampingScrollSimulation(
         position: lyricPaint.lyricOffset,
         velocity: event.primaryVelocity ?? 0,
@@ -403,24 +456,30 @@ class LyricReaderState extends State<LyricsReader>
   ///handle select line
   resumeSelectLineOffset() {
     isWait = true;
+    if (!widget.canScrollBack) return;
     var waitSecond = 0;
     waitTimer?.cancel();
-    waitTimer = new Timer.periodic(Duration(milliseconds: 100), (timer) {
+    waitTimer = Timer.periodic(Duration(milliseconds: 100), (timer) {
       waitSecond += 100;
-      if (waitSecond == 400) {
+      // indicated line自动对齐到歌词行中间
+      /*if (waitSecond == 400) {
         realUpdateOffset(widget.model?.computeScroll(
                 lyricPaint.centerLyricIndex,
                 lyricPaint.playingIndex,
                 widget.ui) ??
             0);
         return;
-      }
-      if (waitSecond == 3000) {
-        disposeSelectLineDelay();
-        setSelectLine(false);
-        scrollToPlayLine();
+      }*/
+      if (waitSecond >= widget.waitMilliseconds) {
+        scrollEnd();
       }
     });
+  }
+
+  void scrollEnd() {
+    disposeSelectLineDelay();
+    setSelectLine(false);
+    scrollToPlayLine();
   }
 
   disposeSelectLineDelay() {
@@ -457,19 +516,21 @@ class LyricReaderState extends State<LyricsReader>
   void setTextSpanDrawInfo(
       LyricUI ui, List<LyricSpanInfo> spanList, TextPainter painter) {
     painter.textAlign = lyricPaint.lyricUI.getLyricTextAligin();
-    spanList.forEach((element) {
+    for (var element in spanList) {
       painter
         ..text =
             TextSpan(text: element.raw, style: ui.getPlayingMainTextStyle())
         ..layout();
       element.drawHeight = painter.height;
       element.drawWidth = painter.width;
-    });
+    }
   }
 
   /// enable highlight animation
   /// if playing status is null,no highlight.
-  void handleHighlight() {
+  void handleHighlight({int? currentPosition}) {
+    currentPosition ??= widget.position;
+
     var lyrics = widget.model?.lyrics;
     if (!widget.ui.enableHighlight() ||
         widget.playing == null ||
@@ -480,17 +541,17 @@ class LyricReaderState extends State<LyricsReader>
     var width = 0.0;
     double? firstBegin;
     final spans = line.spanList ?? line.defaultSpanList;
-    final blankTime = (line.startTime ?? 0) - widget.position;
+    final blankTime = (line.startTime ?? 0) - currentPosition;
     if (blankTime > 0) {
       items.add(TweenSequenceItem(
           tween: Tween(begin: 0.0, end: 0.0), weight: blankTime.toDouble()));
     }
     for (LyricSpanInfo element in spans) {
-      if (widget.position >= element.end) {
+      if (currentPosition >= element.end) {
         width += element.drawWidth;
         continue;
       }
-      var ratio = (widget.position - element.start) / element.duration;
+      var ratio = (currentPosition - element.start) / element.duration;
       if (ratio < 0) {
         ratio = 0;
       }
@@ -505,7 +566,7 @@ class LyricReaderState extends State<LyricsReader>
       lyricPaint.highlightWidth = width;
       return;
     }
-    final highlightDuration = (line.endTime ?? 0) - widget.position;
+    final highlightDuration = (line.endTime ?? 0) - currentPosition;
     _highlightController = AnimationController(
       duration:
           Duration(milliseconds: highlightDuration > 0 ? highlightDuration : 0),

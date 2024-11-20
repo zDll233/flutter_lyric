@@ -13,7 +13,7 @@ class ParserLrc extends LyricsParse {
   ParserLrc(String lyric) : super(lyric);
 
   @override
-  List<LyricsLineModel> parseLines({bool isMain: true}) {
+  List<LyricsLineModel> parseLines({bool isMain = true}) {
     //读每一行
     var lines = lyric.split("\n");
     if (lines.isEmpty) {
@@ -21,14 +21,13 @@ class ParserLrc extends LyricsParse {
       return [];
     }
     List<LyricsLineModel> lineList = [];
-    lines.forEach((line) {
+    for (var line in lines) {
       //匹配time
       var time = pattern.stringMatch(line);
       if (time == null) {
         //没有匹配到直接返回
-        //TODO 歌曲相关信息暂不处理
         LyricsLog.logD("忽略未匹配到Time：$line");
-        return;
+        continue;
       }
       //移除time，拿到真实歌词
       var realLyrics = line.replaceFirst(pattern, "");
@@ -46,7 +45,7 @@ class ParserLrc extends LyricsParse {
         lineModel.extText = realLyrics;
       }
       lineList.add(lineModel);
-    });
+    }
     return lineList;
   }
 

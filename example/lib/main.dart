@@ -83,15 +83,15 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
               style: lyricUI.getOtherMainTextStyle(),
             ),
           ),
-          selectLineBuilder: (progress, confirm) {
+          selectLineBuilder: (position, flashBack, confirmPlay) {
             return Row(
               children: [
                 IconButton(
                     onPressed: () {
                       LyricsLog.logD("点击事件");
-                      confirm.call();
+                      confirmPlay.call();
                       setState(() {
-                        audioPlayer?.seek(Duration(milliseconds: progress));
+                        audioPlayer?.seek(Duration(milliseconds: position));
                       });
                     },
                     icon: Icon(Icons.play_arrow, color: Colors.green)),
@@ -103,7 +103,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                   ),
                 ),
                 Text(
-                  progress.toString(),
+                  position.toString(),
                   style: TextStyle(color: Colors.green),
                 )
               ],

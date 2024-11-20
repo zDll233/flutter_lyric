@@ -12,7 +12,7 @@ class ParserQrc extends LyricsParse {
   ParserQrc(String lyric) : super(lyric);
 
   @override
-  List<LyricsLineModel> parseLines({bool isMain: true}) {
+  List<LyricsLineModel> parseLines({bool isMain= true}) {
     lyric =
         RegExp(r"""LyricContent="([\s\S]*)">""").firstMatch(lyric)?.group(1) ??
             lyric;
@@ -23,14 +23,13 @@ class ParserQrc extends LyricsParse {
       return [];
     }
     List<LyricsLineModel> lineList = [];
-    lines.forEach((line) {
+    for (var line in lines) {
       //匹配time
       var time = advancedPattern.stringMatch(line);
       if (time == null) {
         //没有匹配到直接返回
-        //TODO 歌曲相关信息暂不处理
         LyricsLog.logD("忽略未匹配到Time：$line");
-        return;
+        continue;
       }
       //转时间戳
       var ts = int.parse(
@@ -47,7 +46,7 @@ class ParserQrc extends LyricsParse {
         ..startTime = ts
         ..spanList = spanList;
       lineList.add(lineModel);
-    });
+    }
     return lineList;
   }
 

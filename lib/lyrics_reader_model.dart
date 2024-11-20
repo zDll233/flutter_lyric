@@ -66,7 +66,15 @@ class LyricsLineModel {
 
   bool get hasExt => extText?.isNotEmpty == true;
 
-  bool get hasMain => mainText?.isNotEmpty == true;
+  final emptyLrcs = [
+    String.fromCharCodes([32, 13]),
+    String.fromCharCodes([13])
+  ]; // 空格 回车
+
+  bool get hasMain {
+    return mainText?.isNotEmpty == true &&
+        !emptyLrcs.any((element) => element == mainText);
+  }
 
   List<LyricSpanInfo>? _defaultSpanList;
 
