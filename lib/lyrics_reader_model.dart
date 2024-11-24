@@ -68,10 +68,12 @@ class LyricsLineModel {
 
   final emptyLrcs = [
     String.fromCharCodes([32, 13]),
+    String.fromCharCodes([32]),
     String.fromCharCodes([13])
-  ]; // 空格 回车
+  ]; // 32: 空格 13: 回车
 
   bool get hasMain {
+    // print(mainText?.codeUnits);
     return mainText?.isNotEmpty == true &&
         !emptyLrcs.any((element) => element == mainText);
   }
