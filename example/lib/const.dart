@@ -274,3 +274,265 @@ final transLyric = """[ti:If I Didn't Love You]
 [03:06.56]如果我从未爱上你
 [03:09.07]如果我从未爱上你
 [03:11.67]如果我从未爱上你""";
+
+final vttLyric = """WEBVTT
+
+1
+00:00:00.450 --> 00:00:02.440
+If I Didn't Love You - Jason Aldean/Carrie Underwood
+
+2
+00:00:11.150 --> 00:00:12.800
+I wouldn't mind being alone
+
+3
+00:00:13.680 --> 00:00:16.240
+I wouldn't keep checking my phone
+
+4
+00:00:16.290 --> 00:00:17.950
+Wouldn't take the long way home
+
+5
+00:00:18.000 --> 00:00:20.510
+Just to drive myself crazy
+
+6
+00:00:21.530 --> 00:00:23.220
+I wouldn't be losing sleep
+
+7
+00:00:24.240 --> 00:00:26.520
+Remembering everything
+
+8
+00:00:26.570 --> 00:00:28.570
+Everything you said to me
+
+9
+00:00:28.620 --> 00:00:31.050
+Like I'm doing lately
+
+10
+00:00:31.100 --> 00:00:34.500
+You you wouldn't be all
+
+11
+00:00:35.340 --> 00:00:37.750
+All that I want
+
+12
+00:00:37.820 --> 00:00:39.400
+Baby I can let go
+
+13
+00:00:40.360 --> 00:00:45.230
+If I didn't love you I'd be good by now
+
+14
+00:00:45.280 --> 00:00:49.760
+I'd be better than barely getting by somehow
+
+15
+00:00:50.770 --> 00:00:54.520
+Yeah it would be easy not to miss you
+
+16
+00:00:54.570 --> 00:00:57.150
+Wonder about who's with you
+
+17
+00:00:57.200 --> 00:00:58.560
+Turn the want you off
+
+18
+00:00:58.610 --> 00:01:01.160
+Whenever I want to
+
+19
+00:01:01.210 --> 00:01:05.210
+If I didn't love you
+
+20
+00:01:06.320 --> 00:01:09.280
+If I didn't love you
+
+21
+00:01:13.710 --> 00:01:15.810
+I wouldn't still cry sometimes
+
+22
+00:01:16.510 --> 00:01:18.210
+Wouldn't have to fake a smile
+
+23
+00:01:18.830 --> 00:01:20.920
+Play it off and tell a lie
+
+24
+00:01:20.970 --> 00:01:24.120
+When somebody asked how I've been
+
+25
+00:01:24.170 --> 00:01:25.650
+I'd try to find someone new
+
+26
+00:01:25.700 --> 00:01:26.770
+Someone new
+
+27
+00:01:26.820 --> 00:01:28.480
+It should be something I can do
+
+28
+00:01:28.530 --> 00:01:29.320
+I can do
+
+29
+00:01:29.370 --> 00:01:31.170
+Baby if it weren't for you
+
+30
+00:01:31.220 --> 00:01:33.730
+I wouldn't be in the state that I'm in
+
+31
+00:01:33.780 --> 00:01:34.320
+Yeah you
+
+32
+00:01:35.170 --> 00:01:37.050
+You wouldn't be all
+
+33
+00:01:37.990 --> 00:01:39.570
+All that I want
+
+34
+00:01:40.410 --> 00:01:42.930
+Baby I could let go
+
+35
+00:01:42.980 --> 00:01:47.800
+If I didn't love you I'd be good by now
+
+36
+00:01:47.850 --> 00:01:52.420
+I'd be better than barely getting by somehow
+
+37
+00:01:53.420 --> 00:01:57.090
+Yeah it would be easy not to miss you
+
+38
+00:01:57.140 --> 00:01:59.700
+Wonder about who's with you
+
+39
+00:01:59.750 --> 00:02:01.550
+Turn the want you off
+
+40
+00:02:01.600 --> 00:02:03.250
+Whenever I want to
+
+41
+00:02:03.820 --> 00:02:07.820
+If I didn't love you
+
+42
+00:02:08.910 --> 00:02:11.750
+If I didn't love you
+
+43
+00:02:11.800 --> 00:02:14.540
+Oh if I didn't love you
+
+44
+00:02:14.590 --> 00:02:18.450
+It wouldn't be so hard to see you
+
+45
+00:02:18.500 --> 00:02:20.630
+Know how much I need you
+
+46
+00:02:20.680 --> 00:02:24.210
+Wouldn't hate that I still feel like I do
+
+47
+00:02:24.770 --> 00:02:26.650
+If I didn't love you
+
+48
+00:02:26.700 --> 00:02:30.090
+Oh if I didn't love you
+
+49
+00:02:30.140 --> 00:02:32.720
+If I didn't love you
+
+50
+00:02:32.770 --> 00:02:34.520
+Hmm mm-hmm
+
+51
+00:02:34.570 --> 00:02:35.850
+
+
+52
+00:02:35.900 --> 00:02:39.910
+If I didn't love you I'd be good by now
+
+53
+00:02:39.960 --> 00:02:44.830
+I'd be better than barely getting by somehow
+
+54
+00:02:44.880 --> 00:02:45.510
+
+
+55
+00:02:45.560 --> 00:02:49.280
+Yeah it would be easy not to miss you
+
+56
+00:02:49.330 --> 00:02:51.910
+Wonder about who's with you
+
+57
+00:02:51.960 --> 00:02:53.190
+Turn the want you off
+
+58
+00:02:53.240 --> 00:02:56.350
+Whenever I want to
+
+59
+00:02:56.400 --> 00:02:59.270
+If I didn't love you
+
+60
+00:02:59.320 --> 00:03:01.160
+Yeah ayy ayy
+
+61
+00:03:01.210 --> 00:03:03.230
+If I didn't love you
+
+62
+00:03:03.280 --> 00:03:06.510
+Oh if I didn't love you
+
+63
+00:03:06.560 --> 00:03:09.650
+If I didn't love you
+
+64
+00:03:09.700 --> 00:03:11.620
+If I didn't love you
+
+65
+00:03:11.670 --> 00:03:21.670
+If I didn't love you""";

@@ -24,7 +24,8 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
 
   bool useEnhancedLrc = false;
   var lyricModel = LyricsModelBuilder.create()
-      .bindLyricToMain(normalLyric)
+      // .bindLyricToMain(normalLyric)
+      .bindLyricToMain(vttLyric)
       .bindLyricToExt(transLyric)
       .getModel();
 
