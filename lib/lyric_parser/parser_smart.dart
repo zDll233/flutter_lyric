@@ -1,6 +1,7 @@
 import 'package:flutter_lyric/lyric_parser/lyrics_parse.dart';
 import 'package:flutter_lyric/lyric_parser/parser_lrc.dart';
 import 'package:flutter_lyric/lyric_parser/parser_qrc.dart';
+import 'package:flutter_lyric/lyric_parser/parser_vtt.dart';
 import 'package:flutter_lyric/lyrics_reader_model.dart';
 
 ///smart parser
@@ -14,6 +15,13 @@ class ParserSmart extends LyricsParse {
     if (qrc.isOK()) {
       return qrc.parseLines(isMain: isMain);
     }
+
+    // WebVTT
+    var vtt = ParserVtt(lyric);
+    if (vtt.isOK()) {
+      return vtt.parseLines(isMain: isMain);
+    }
+
     return ParserLrc(lyric).parseLines(isMain: isMain);
   }
 }
