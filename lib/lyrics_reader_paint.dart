@@ -210,8 +210,7 @@ class LyricsReaderPaint extends ChangeNotifier implements CustomPainter {
       final radius = _rippleProgress * maxR;
       final alpha = (1 - _rippleProgress).clamp(0.0, 1.0) * 0.35;
       canvas.save();
-      canvas.clipRRect(
-          RRect.fromRectAndRadius(pressedRect, const Radius.circular(8)));
+      canvas.clipRRect(pressedRect);
       canvas.drawCircle(
           _pressedPoint,
           radius,
