@@ -20,6 +20,9 @@ class LyricsReaderPaint extends ChangeNotifier implements CustomPainter {
   ///点击涟漪颜色 (null = 不显示涟漪)
   Color? rippleColor;
 
+  ///左对齐时歌词行的行内左边距 (与 hover 框左缘保持间距)
+  double lineLeftPadding = 12;
+
   int _hoverLineIndex = -1;
 
   ///鼠标悬停的歌词行, -1 表示无
@@ -390,7 +393,8 @@ class LyricsReaderPaint extends ChangeNotifier implements CustomPainter {
   double getLineOffsetX(TextPainter textPainter) {
     switch (lyricUI.getLyricHorizontalAlign()) {
       case LyricAlign.LEFT:
-        return 0;
+        // 左对齐时行内左边距, 避免歌词紧贴 hover 框左缘
+        return lineLeftPadding;
       case LyricAlign.CENTER:
         return (mSize.width - textPainter.width) / 2;
       case LyricAlign.RIGHT:
