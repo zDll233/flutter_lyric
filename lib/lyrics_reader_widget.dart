@@ -451,19 +451,14 @@ class LyricReaderState extends State<LyricsReader>
           // 抬起: 未扩散完则加速补完, 然后淡出 (官方 InkRipple 行为)
           final ripple = _rippleController;
           if (ripple != null && lyricPaint.pressedLineIndex >= 0) {
-            final completeThenFade = (dynamic _) {
-              _fadeRippleOut();
-            };
             if (ripple.isAnimating) {
-              ripple.animateTo(1,
-                  duration: const Duration(milliseconds: 150));
               _rippleController!.animateTo(1,
                       duration: const Duration(milliseconds: 150))
-                  .then(completeThenFade);
+                  .then((_) => _fadeRippleOut());
             } else if (ripple.value >= 1) {
-              completeThenFade();
+              _fadeRippleOut();
             } else {
-              ripple.forward().then(completeThenFade);
+              ripple.forward().then((_) => _fadeRippleOut());
             }
           }
           // 点击歌词行: 命中检测后回调, 并滚动高亮到该行
