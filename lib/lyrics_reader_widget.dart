@@ -471,7 +471,7 @@ class LyricReaderState extends State<LyricsReader>
               final startTimeMs = lyrics[index].startTime ?? 0;
               setSelectLine(false);
               disposeFiling();
-              disposeSelectLineDelay();
+              // 不取消 wait: 点击行后保持 isWait, 固定时间后自动滚动回播放位置
               handleHighlight(currentPosition: startTimeMs);
               onTapLine(index, Duration(milliseconds: startTimeMs));
             }
