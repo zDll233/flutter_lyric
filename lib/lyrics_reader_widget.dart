@@ -438,7 +438,7 @@ class LyricReaderState extends State<LyricsReader>
               )..addListener(() {
                   lyricPaint.rippleProgress = _rippleController!.value;
                 });
-              _rippleController.forward().whenComplete(() {
+              _rippleController!.forward().whenComplete(() {
                 lyricPaint.pressedLineIndex = -1;
                 lyricPaint.rippleProgress = 0;
               });
