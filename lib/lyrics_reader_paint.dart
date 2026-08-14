@@ -20,9 +20,6 @@ class LyricsReaderPaint extends ChangeNotifier implements CustomPainter {
   ///点击涟漪颜色 (null = 不显示涟漪)
   Color? rippleColor;
 
-  ///行框水平方向的内边距 (框左/右边缘与歌词之间的留白)
-  double lineRectPadding = 12;
-
   int _hoverLineIndex = -1;
 
   ///鼠标悬停的歌词行, -1 表示无
@@ -214,7 +211,7 @@ class LyricsReaderPaint extends ChangeNotifier implements CustomPainter {
   }
 
   ///计算某行 hover/涟漪框的位置: 行区间上下各让出 lineSpace/2 使文字居中,
-  ///水平方向左右各缩进 [lineRectPadding] (框与歌词之间留内边距)。
+  ///水平方向覆盖整个绘制区 (左对齐时歌词从绘制区左端开始, 缩进会溢出框)。
   RRect getLineRectAt(int index, Size size) {
     mSize = size;
     final centerY = size.height * lyricUI.getPlayingLineBias();
@@ -231,9 +228,9 @@ class LyricsReaderPaint extends ChangeNotifier implements CustomPainter {
     final height = computeLineHeight(index, lyrics[index]);
     return RRect.fromRectAndRadius(
       Rect.fromLTRB(
-        lineRectPadding,
+        0,
         drawOffset + lineSpace / 2,
-        size.width - lineRectPadding,
+        size.width,
         drawOffset + height + lineSpace / 2,
       ),
       const Radius.circular(8),
