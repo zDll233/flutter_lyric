@@ -23,6 +23,9 @@ class LyricsReaderPaint extends ChangeNotifier implements CustomPainter {
   ///左对齐时歌词行的行内左边距 (与 hover 框左缘保持间距)
   double lineLeftPadding = 12;
 
+  ///hover/涟漪框上下边距 (与 [lineLeftPadding] 一致)
+  double lineRectPadding = 12;
+
   int _hoverLineIndex = -1;
 
   ///鼠标悬停的歌词行, -1 表示无
@@ -37,6 +40,7 @@ class LyricsReaderPaint extends ChangeNotifier implements CustomPainter {
 
   int _pressedLineIndex = -1;
   double _rippleProgress = 0;
+  double _rippleFade = 0;
   Offset _pressedPoint = Offset.zero;
 
   int get pressedLineIndex => _pressedLineIndex;
@@ -52,6 +56,14 @@ class LyricsReaderPaint extends ChangeNotifier implements CustomPainter {
 
   set rippleProgress(double value) {
     _rippleProgress = value;
+    refresh();
+  }
+
+  ///涟漪透明度系数 (1 = 完全可见, 0 = 已淡出)
+  double get rippleFade => _rippleFade;
+
+  set rippleFade(double value) {
+    _rippleFade = value;
     refresh();
   }
 
@@ -193,28 +205,28 @@ class LyricsReaderPaint extends ChangeNotifier implements CustomPainter {
       }
       drawOffset = nextOffset;
     }
-    // 点击涟漪: 从点击点扩散的圆, 裁剪在点击行的框内 (类似 InkWell splash),
-    // 随进度渐隐
+    // 点击涟漪: 从点击点扩散的圆, 裁剪在点击行的框内 (类似 InkWell splash);
+    // 扩散阶段 alpha 固定, 抬起后淡出
     if (rippleColor != null &&
         _pressedLineIndex >= 0 &&
-        _rippleProgress > 0 &&
-        _rippleProgress < 1) {
+        _rippleFade > 0) {
       final pressedRect = getLineRectAt(_pressedLineIndex, size);
       final maxR = math.max(size.width, size.height) * 1.2;
       final radius = _rippleProgress * maxR;
-      final alpha = (1 - _rippleProgress).clamp(0.0, 1.0) * 0.35;
       canvas.save();
       canvas.clipRRect(pressedRect);
       canvas.drawCircle(
           _pressedPoint,
           radius,
-          Paint()..color = rippleColor!.withValues(alpha: alpha));
+          Paint()
+              ..color =
+                  rippleColor!.withValues(alpha: 0.25 * _rippleFade));
       canvas.restore();
     }
   }
 
-  ///计算某行 hover/涟漪框的位置: 行区间上下各让出 lineSpace/2 使文字居中,
-  ///水平方向覆盖整个绘制区 (左对齐时歌词从绘制区左端开始, 缩进会溢出框)。
+  ///计算某行 hover/涟漪框的位置: 文字上下各留 [lineRectPadding] 边距
+  ///(与左对齐行内左边距一致), 水平方向覆盖整个绘制区。
   RRect getLineRectAt(int index, Size size) {
     mSize = size;
     final centerY = size.height * lyricUI.getPlayingLineBias();
@@ -227,14 +239,16 @@ class LyricsReaderPaint extends ChangeNotifier implements CustomPainter {
     if (index < 0 || index >= lyrics.length) {
       return RRect.fromRectAndRadius(Rect.zero, Radius.zero);
     }
-    final lineSpace = index == 0 ? 0.0 : lyricUI.getLineSpace();
-    final height = computeLineHeight(index, lyrics[index]);
+    // 文字上缘: 行顶 (i>0 时含 lineSpace), 框上下各留 lineRectPadding
+    final textTop =
+        drawOffset + (index == 0 ? 0.0 : lyricUI.getLineSpace());
+    final textBottom = drawOffset + computeLineHeight(index, lyrics[index]);
     return RRect.fromRectAndRadius(
       Rect.fromLTRB(
         0,
-        drawOffset + lineSpace / 2,
+        textTop - lineRectPadding,
         size.width,
-        drawOffset + height + lineSpace / 2,
+        textBottom + lineRectPadding,
       ),
       const Radius.circular(8),
     );

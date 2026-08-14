@@ -87,6 +87,7 @@ class LyricReaderState extends State<LyricsReader>
   AnimationController? _highlightController;
   AnimationController? _lineController;
   AnimationController? _rippleController;
+  AnimationController? _rippleFadeController;
 
   var mSize = Size.infinite;
 
@@ -424,30 +425,47 @@ class LyricReaderState extends State<LyricsReader>
           disposeSelectLineDelay();
           disposeFiling();
           isDrag = true;
-          // 点击涟漪动画
+          // 点击涟漪 (InkRipple 模式): 按下后扩散, 按住期间持续填充
           if (widget.rippleColor != null) {
             final index =
                 lyricPaint.getLineIndexAtY(event.localPosition.dy, mSize);
             if (index >= 0) {
               lyricPaint.pressedLineIndex = index;
               lyricPaint.pressedPoint = event.localPosition;
+              lyricPaint.rippleProgress = 0;
+              lyricPaint.rippleFade = 1;
               _rippleController?.dispose();
               _rippleController = AnimationController(
                 vsync: this,
-                duration: const Duration(milliseconds: 400),
+                duration: const Duration(milliseconds: 600),
               )..addListener(() {
                   lyricPaint.rippleProgress = _rippleController!.value;
                 });
-              _rippleController!.forward().whenComplete(() {
-                lyricPaint.pressedLineIndex = -1;
-                lyricPaint.rippleProgress = 0;
-              });
+              _rippleController!.forward();
             }
           }
         },
         onTapUp: (event) {
           isDrag = false;
           resumeSelectLineOffset();
+          // 抬起: 未扩散完则加速补完, 然后淡出 (官方 InkRipple 行为)
+          final ripple = _rippleController;
+          if (ripple != null && lyricPaint.pressedLineIndex >= 0) {
+            final completeThenFade = () {
+              _fadeRippleOut();
+            };
+            if (ripple.isAnimating) {
+              ripple.animateTo(1,
+                  duration: const Duration(milliseconds: 150));
+              _rippleController!.animateTo(1,
+                      duration: const Duration(milliseconds: 150))
+                  .then(completeThenFade);
+            } else if (ripple.value >= 1) {
+              completeThenFade();
+            } else {
+              ripple.forward().then(completeThenFade);
+            }
+          }
           // 点击歌词行: 命中检测后回调, 并滚动高亮到该行
           final onTapLine = widget.onTapLine;
           if (onTapLine != null) {
@@ -466,6 +484,8 @@ class LyricReaderState extends State<LyricsReader>
         },
         onVerticalDragStart: (event) {
           scrollStart();
+          // 拖拽取消涟漪
+          _cancelRipple();
         },
         onVerticalDragUpdate: (event) {
           lyricPaint.lyricOffset += event.primaryDelta ?? 0;
@@ -565,6 +585,38 @@ class LyricReaderState extends State<LyricsReader>
   disposeRipple() {
     _rippleController?.dispose();
     _rippleController = null;
+    _rippleFadeController?.dispose();
+    _rippleFadeController = null;
+  }
+
+  ///涟漪淡出 (官方 InkRipple 抬起后行为), 完成后清除绘制状态
+  void _fadeRippleOut() {
+    if (lyricPaint.pressedLineIndex < 0) return;
+    _rippleFadeController?.dispose();
+    _rippleFadeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    )
+      ..addListener(() {
+        lyricPaint.rippleFade = 1 - _rippleFadeController!.value;
+      })
+      ..addStatusListener((status) {
+        if (status == AnimationStatus.completed) {
+          lyricPaint.pressedLineIndex = -1;
+          lyricPaint.rippleProgress = 0;
+          lyricPaint.rippleFade = 0;
+        }
+      });
+    _rippleFadeController!.forward();
+  }
+
+  ///取消涟漪 (拖拽等场景)
+  void _cancelRipple() {
+    _rippleFadeController?.dispose();
+    _rippleFadeController = null;
+    lyricPaint.pressedLineIndex = -1;
+    lyricPaint.rippleProgress = 0;
+    lyricPaint.rippleFade = 0;
   }
 
   @override
