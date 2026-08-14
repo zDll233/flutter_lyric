@@ -176,17 +176,11 @@ class LyricsReaderPaint extends ChangeNotifier implements CustomPainter {
     drawOffset -= model?.firstCenterOffset(playingIndex, lyricUI) ?? 0;
     for (var i = 0; i < lyrics.length; i++) {
       var element = lyrics[i];
-      // hover 行的背景与边框 (画在文本下层)
+      // hover 行的背景 (画在文本下层)
       if (hoverColor != null && i == _hoverLineIndex) {
         final hoverRect = getLineRectAt(i, size);
         canvas.drawRRect(hoverRect,
             Paint()..color = hoverColor!.withValues(alpha: 0.08));
-        canvas.drawRRect(
-            hoverRect,
-            Paint()
-              ..style = PaintingStyle.stroke
-              ..strokeWidth = 1
-              ..color = hoverColor!.withValues(alpha: 0.22));
       }
       var lineHeight = drawLine(i, drawOffset, canvas, element);
       var nextOffset = drawOffset + lineHeight;
