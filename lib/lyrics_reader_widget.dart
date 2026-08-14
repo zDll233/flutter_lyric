@@ -89,6 +89,9 @@ class LyricReaderState extends State<LyricsReader>
   AnimationController? _rippleController;
   AnimationController? _rippleFadeController;
 
+  ///点击歌词行 seek 后抑制下一次自动滚动 (保持当前视角)
+  bool _suppressAutoScroll = false;
+
   var mSize = Size.infinite;
 
   var isDrag = false;
@@ -157,6 +160,11 @@ class LyricReaderState extends State<LyricsReader>
 
   void selectLineAndScrollToPlayLine([bool animation = true]) {
     selectLine(widget.model?.getCurrentLine(widget.position) ?? 0);
+    // 点击歌词行 seek 后: 只更新选中行, 抑制本次自动滚动
+    if (_suppressAutoScroll) {
+      _suppressAutoScroll = false;
+      return;
+    }
     if (cacheLine != lyricPaint.playingIndex) {
       lyricPaint.highlightWidth = 0;
       cacheLine = lyricPaint.playingIndex;
@@ -473,6 +481,8 @@ class LyricReaderState extends State<LyricsReader>
               disposeFiling();
               disposeSelectLineDelay();
               handleHighlight(currentPosition: startTimeMs);
+              // 点击行后保持当前视角, 不立即滚动到播放位置
+              _suppressAutoScroll = true;
               onTapLine(index, Duration(milliseconds: startTimeMs));
             }
           }
