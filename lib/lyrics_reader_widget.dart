@@ -415,13 +415,12 @@ class LyricReaderState extends State<LyricsReader>
                 lyricPaint.getLineIndexAtY(event.localPosition.dy, mSize);
             final lyrics = lyricPaint.model?.lyrics;
             if (index >= 0 && lyrics != null && index < lyrics.length) {
-              final rawStart = lyrics[index].startTime;
-              final startTime = rawStart is Duration ? rawStart : Duration.zero;
+              final startTimeMs = lyrics[index].startTime ?? 0;
               setSelectLine(false);
               disposeFiling();
               disposeSelectLineDelay();
-              handleHighlight(currentPosition: startTime.inMilliseconds);
-              onTapLine(index, startTime);
+              handleHighlight(currentPosition: startTimeMs);
+              onTapLine(index, Duration(milliseconds: startTimeMs));
             }
           }
         },
