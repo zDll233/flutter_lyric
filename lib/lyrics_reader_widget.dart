@@ -451,7 +451,7 @@ class LyricReaderState extends State<LyricsReader>
           // 抬起: 未扩散完则加速补完, 然后淡出 (官方 InkRipple 行为)
           final ripple = _rippleController;
           if (ripple != null && lyricPaint.pressedLineIndex >= 0) {
-            final completeThenFade = () {
+            final completeThenFade = (dynamic _) {
               _fadeRippleOut();
             };
             if (ripple.isAnimating) {
