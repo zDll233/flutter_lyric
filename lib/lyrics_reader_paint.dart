@@ -14,12 +14,58 @@ class LyricsReaderPaint extends ChangeNotifier implements CustomPainter {
 
   LyricsReaderPaint(this.model, this.lyricUI);
 
-  ///高亮混合笔
+  ///hover 行边框色 (null = 不显示 hover 效果)
+  Color? hoverColor;
+
+  ///点击涟漪颜色 (null = 不显示涟漪)
+  Color? rippleColor;
+
+  int _hoverLineIndex = -1;
+
+  ///鼠标悬停的歌词行, -1 表示无
+  int get hoverLineIndex => _hoverLineIndex;
+
+  set hoverLineIndex(int value) {
+    if (_hoverLineIndex != value) {
+      _hoverLineIndex = value;
+      refresh();
+    }
+  }
+
+  int _pressedLineIndex = -1;
+  double _rippleProgress = 0;
+  Offset _pressedPoint = Offset.zero;
+
+  int get pressedLineIndex => _pressedLineIndex;
+
+  set pressedLineIndex(int value) {
+    if (_pressedLineIndex != value) {
+      _pressedLineIndex = value;
+      refresh();
+    }
+  }
+
+  double get rippleProgress => _rippleProgress;
+
+  set rippleProgress(double value) {
+    _rippleProgress = value;
+    refresh();
+  }
+
+  Offset get pressedPoint => _pressedPoint;
+
+  set pressedPoint(Offset value) {
+    _pressedPoint = value;
+    refresh();
+  }
+
+  ///高亮混合�? 
   var lightBlendPaint = Paint()
     ..blendMode = BlendMode.srcIn
     ..isAntiAlias = true;
 
   var playingIndex = 0;
+
 
   double _lyricOffset = 0;
 
