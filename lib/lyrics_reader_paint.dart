@@ -20,6 +20,9 @@ class LyricsReaderPaint extends ChangeNotifier implements CustomPainter {
   ///点击涟漪颜色 (null = 不显示涟漪)
   Color? rippleColor;
 
+  ///行框水平方向的内边距 (框左/右边缘与歌词之间的留白)
+  double lineRectPadding = 12;
+
   int _hoverLineIndex = -1;
 
   ///鼠标悬停的歌词行, -1 表示无
@@ -173,15 +176,9 @@ class LyricsReaderPaint extends ChangeNotifier implements CustomPainter {
     drawOffset -= model?.firstCenterOffset(playingIndex, lyricUI) ?? 0;
     for (var i = 0; i < lyrics.length; i++) {
       var element = lyrics[i];
-      // hover 行的背景与边框 (画在文本下层);
-      // 行距只加在行顶导致文字在行区间内偏下, 框上下各让出 lineSpace/2 使文字居中
+      // hover 行的背景与边框 (画在文本下层)
       if (hoverColor != null && i == _hoverLineIndex) {
-        final lineSpace = i == 0 ? 0.0 : lyricUI.getLineSpace();
-        final hoverRect = RRect.fromRectAndRadius(
-          Rect.fromLTRB(0, drawOffset + lineSpace / 2, size.width,
-              drawOffset + computeLineHeight(i, element) + lineSpace / 2),
-          const Radius.circular(8),
-        );
+        final hoverRect = getLineRectAt(i, size);
         canvas.drawRRect(hoverRect,
             Paint()..color = hoverColor!.withValues(alpha: 0.08));
         canvas.drawRRect(
@@ -202,19 +199,52 @@ class LyricsReaderPaint extends ChangeNotifier implements CustomPainter {
       }
       drawOffset = nextOffset;
     }
-    // 点击涟漪: 从点击点扩散的圆, 随进度渐隐
+    // 点击涟漪: 从点击点扩散的圆, 裁剪在点击行的框内 (类似 InkWell splash),
+    // 随进度渐隐
     if (rippleColor != null &&
         _pressedLineIndex >= 0 &&
         _rippleProgress > 0 &&
         _rippleProgress < 1) {
+      final pressedRect = getLineRectAt(_pressedLineIndex, size);
       final maxR = math.max(size.width, size.height) * 1.2;
       final radius = _rippleProgress * maxR;
       final alpha = (1 - _rippleProgress).clamp(0.0, 1.0) * 0.35;
+      canvas.save();
+      canvas.clipRRect(
+          RRect.fromRectAndRadius(pressedRect, const Radius.circular(8)));
       canvas.drawCircle(
           _pressedPoint,
           radius,
           Paint()..color = rippleColor!.withValues(alpha: alpha));
+      canvas.restore();
     }
+  }
+
+  ///计算某行 hover/涟漪框的位置: 行区间上下各让出 lineSpace/2 使文字居中,
+  ///水平方向左右各缩进 [lineRectPadding] (框与歌词之间留内边距)。
+  RRect getLineRectAt(int index, Size size) {
+    mSize = size;
+    final centerY = size.height * lyricUI.getPlayingLineBias();
+    var drawOffset = centerY + _lyricOffset;
+    final lyrics = model?.lyrics ?? [];
+    drawOffset -= model?.firstCenterOffset(playingIndex, lyricUI) ?? 0;
+    for (var i = 0; i < index && i < lyrics.length; i++) {
+      drawOffset += computeLineHeight(i, lyrics[i]);
+    }
+    if (index < 0 || index >= lyrics.length) {
+      return RRect.fromRectAndRadius(Rect.zero, Radius.zero);
+    }
+    final lineSpace = index == 0 ? 0.0 : lyricUI.getLineSpace();
+    final height = computeLineHeight(index, lyrics[index]);
+    return RRect.fromRectAndRadius(
+      Rect.fromLTRB(
+        lineRectPadding,
+        drawOffset + lineSpace / 2,
+        size.width - lineRectPadding,
+        drawOffset + height + lineSpace / 2,
+      ),
+      const Radius.circular(8),
+    );
   }
 
   double drawLine(
