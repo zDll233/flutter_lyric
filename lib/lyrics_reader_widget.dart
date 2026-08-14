@@ -38,6 +38,12 @@ class LyricsReader extends StatefulWidget {
   /// 点击某行歌词时回调 (行索引, 该行开始时间)
   final void Function(int lineIndex, Duration startTime)? onTapLine;
 
+  /// hover 歌词行的边框颜色 (null = 不显示)
+  final Color? hoverColor;
+
+  /// 点击歌词行的涟漪颜色 (null = 不显示)
+  final Color? rippleColor;
+
   final SelectLineBuilder? selectLineBuilder;
   final EmptyBuilder? emptyBuilder;
 
@@ -62,6 +68,8 @@ class LyricsReader extends StatefulWidget {
     LyricUI? lyricUi,
     this.onTap,
     this.onTapLine,
+    this.hoverColor,
+    this.rippleColor,
     this.playing,
     this.emptyBuilder,
     this.waitMilliseconds = 3000,
@@ -78,6 +86,7 @@ class LyricReaderState extends State<LyricsReader>
   AnimationController? _flingController;
   AnimationController? _highlightController;
   AnimationController? _lineController;
+  AnimationController? _rippleController;
 
   var mSize = Size.infinite;
 
@@ -307,15 +316,26 @@ class LyricReaderState extends State<LyricsReader>
 
   @override
   Widget build(BuildContext context) {
-    return buildTouchReader(Stack(
-      children: [
-        buildReaderWidget(),
-        if (widget.selectLineBuilder != null &&
-            isShowSelectLineWidget &&
-            lyricPaint.centerY != 0)
-          buildSelectLineWidget()
-      ],
-    ));
+    // 透传 hover/涟漪颜色到绘制层
+    lyricPaint.hoverColor = widget.hoverColor;
+    lyricPaint.rippleColor = widget.rippleColor;
+    return MouseRegion(
+      onHover: (event) {
+        if (widget.model.isNullOrEmpty) return;
+        lyricPaint.hoverLineIndex =
+            lyricPaint.getLineIndexAtY(event.localPosition.dy, mSize);
+      },
+      onExit: (_) => lyricPaint.hoverLineIndex = -1,
+      child: buildTouchReader(Stack(
+        children: [
+          buildReaderWidget(),
+          if (widget.selectLineBuilder != null &&
+              isShowSelectLineWidget &&
+              lyricPaint.centerY != 0)
+            buildSelectLineWidget()
+        ],
+      )),
+    );
   }
 
   Positioned buildSelectLineWidget() {
@@ -404,6 +424,26 @@ class LyricReaderState extends State<LyricsReader>
           disposeSelectLineDelay();
           disposeFiling();
           isDrag = true;
+          // 点击涟漪动画
+          if (widget.rippleColor != null) {
+            final index =
+                lyricPaint.getLineIndexAtY(event.localPosition.dy, mSize);
+            if (index >= 0) {
+              lyricPaint.pressedLineIndex = index;
+              lyricPaint.pressedPoint = event.localPosition;
+              _rippleController?.dispose();
+              _rippleController = AnimationController(
+                vsync: this,
+                duration: const Duration(milliseconds: 400),
+              )..addListener(() {
+                  lyricPaint.rippleProgress = _rippleController!.value;
+                });
+              _rippleController.forward().whenComplete(() {
+                lyricPaint.pressedLineIndex = -1;
+                lyricPaint.rippleProgress = 0;
+              });
+            }
+          }
         },
         onTapUp: (event) {
           isDrag = false;
@@ -522,12 +562,18 @@ class LyricReaderState extends State<LyricsReader>
     _highlightController = null;
   }
 
+  disposeRipple() {
+    _rippleController?.dispose();
+    _rippleController = null;
+  }
+
   @override
   void dispose() {
     disposeSelectLineDelay();
     disposeFiling();
     disposeLine();
     disposeHighlight();
+    disposeRipple();
     centerLyricIndexStream.close();
     super.dispose();
   }

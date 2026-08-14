@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_lyric/lyric_helper.dart';
 import 'package:flutter_lyric/lyric_ui/lyric_ui.dart';
@@ -125,6 +127,22 @@ class LyricsReaderPaint extends ChangeNotifier implements CustomPainter {
     drawOffset -= model?.firstCenterOffset(playingIndex, lyricUI) ?? 0;
     for (var i = 0; i < lyrics.length; i++) {
       var element = lyrics[i];
+      // hover 行的背景与边框 (画在文本下层)
+      if (hoverColor != null && i == _hoverLineIndex) {
+        final hoverRect = RRect.fromRectAndRadius(
+          Rect.fromLTRB(0, drawOffset, size.width,
+              drawOffset + computeLineHeight(i, element)),
+          const Radius.circular(8),
+        );
+        canvas.drawRRect(hoverRect,
+            Paint()..color = hoverColor!.withValues(alpha: 0.10));
+        canvas.drawRRect(
+            hoverRect,
+            Paint()
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 1
+              ..color = hoverColor!.withValues(alpha: 0.45));
+      }
       var lineHeight = drawLine(i, drawOffset, canvas, element);
       var nextOffset = drawOffset + lineHeight;
       if (centerY > drawOffset && centerY < nextOffset) {
@@ -135,6 +153,19 @@ class LyricsReaderPaint extends ChangeNotifier implements CustomPainter {
         }
       }
       drawOffset = nextOffset;
+    }
+    // 点击涟漪: 从点击点扩散的圆, 随进度渐隐
+    if (rippleColor != null &&
+        _pressedLineIndex >= 0 &&
+        _rippleProgress > 0 &&
+        _rippleProgress < 1) {
+      final maxR = math.max(size.width, size.height) * 1.2;
+      final radius = _rippleProgress * maxR;
+      final alpha = (1 - _rippleProgress).clamp(0.0, 1.0) * 0.35;
+      canvas.drawCircle(
+          _pressedPoint,
+          radius,
+          Paint()..color = rippleColor!.withValues(alpha: alpha));
     }
   }
 
