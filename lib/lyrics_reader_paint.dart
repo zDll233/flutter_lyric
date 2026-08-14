@@ -147,6 +147,52 @@ class LyricsReaderPaint extends ChangeNotifier implements CustomPainter {
     return _drawOtherLyricLine(canvas, drawOffset, element, i);
   }
 
+  ///命中检测: 返回点击位置 y 对应的歌词行索引, 无命中返回 -1。
+  ///与 [paint] 的行定位逻辑保持一致 (含滚动偏移)。
+  int getLineIndexAtY(double y, Size size) {
+    if (model == null || model!.lyrics.isEmpty) return -1;
+    mSize = size;
+    final centerY = size.height * lyricUI.getPlayingLineBias();
+    var drawOffset = centerY + _lyricOffset;
+    final lyrics = model!.lyrics;
+    drawOffset -= model!.firstCenterOffset(playingIndex, lyricUI);
+    for (var i = 0; i < lyrics.length; i++) {
+      final lineHeight = computeLineHeight(i, lyrics[i]);
+      final nextOffset = drawOffset + lineHeight;
+      if (y >= drawOffset && y < nextOffset) return i;
+      drawOffset = nextOffset;
+    }
+    return -1;
+  }
+
+  ///计算某行绘制高度 (与 [_drawOtherLyricLine] 的高度累加逻辑一致)。
+  double computeLineHeight(int lineIndex, LyricsLineModel element) {
+    if (!element.hasMain && !element.hasExt) {
+      return lyricUI.getBlankLineHeight();
+    }
+    double h = 0;
+    if (lineIndex != 0) {
+      h += lyricUI.getLineSpace();
+    }
+    final isPlay = lineIndex == playingIndex;
+    if (element.hasMain) {
+      final painter = isPlay
+          ? element.drawInfo?.playingMainTextPainter
+          : element.drawInfo?.otherMainTextPainter;
+      h += painter?.height ?? 0;
+    }
+    if (element.hasExt) {
+      if (element.hasMain) {
+        h += lyricUI.getInlineSpace();
+      }
+      final painter = isPlay
+          ? element.drawInfo?.playingExtTextPainter
+          : element.drawInfo?.otherExtTextPainter;
+      h += painter?.height ?? 0;
+    }
+    return h;
+  }
+
   ///绘制其他歌词行
   ///返回造成的偏移量值
   double _drawOtherLyricLine(Canvas canvas, double drawOffsetY,

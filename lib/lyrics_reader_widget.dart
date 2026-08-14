@@ -34,6 +34,10 @@ class LyricsReader extends StatefulWidget {
   final int position;
   final EdgeInsets? padding;
   final VoidCallback? onTap;
+
+  /// 点击某行歌词时回调 (行索引, 该行开始时间)
+  final void Function(int lineIndex, Duration startTime)? onTapLine;
+
   final SelectLineBuilder? selectLineBuilder;
   final EmptyBuilder? emptyBuilder;
 
@@ -57,6 +61,7 @@ class LyricsReader extends StatefulWidget {
     this.selectLineBuilder,
     LyricUI? lyricUi,
     this.onTap,
+    this.onTapLine,
     this.playing,
     this.emptyBuilder,
     this.waitMilliseconds = 3000,
@@ -403,6 +408,21 @@ class LyricReaderState extends State<LyricsReader>
         onTapUp: (event) {
           isDrag = false;
           resumeSelectLineOffset();
+          // 点击歌词行: 命中检测后回调, 并滚动高亮到该行
+          final onTapLine = widget.onTapLine;
+          if (onTapLine != null) {
+            final index =
+                lyricPaint.getLineIndexAtY(event.localPosition.dy, mSize);
+            final lyrics = lyricPaint.model?.lyrics;
+            if (index >= 0 && lyrics != null && index < lyrics.length) {
+              final startTime = lyrics[index].startTime ?? Duration.zero;
+              setSelectLine(false);
+              disposeFiling();
+              disposeSelectLineDelay();
+              handleHighlight(currentPosition: startTime.inMilliseconds);
+              onTapLine(index, startTime);
+            }
+          }
         },
         onVerticalDragStart: (event) {
           scrollStart();
