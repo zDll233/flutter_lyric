@@ -254,9 +254,14 @@ class LyricReaderState extends State<LyricsReader>
       textDirection: TextDirection.ltr,
     );
     linePaint.textAlign = lyricPaint.lyricUI.getLyricTextAligin();
+    // 左对齐时行内左边距占位, 布局宽度相应收窄, 否则文字右缘超出画布被裁剪
+    final leftPad = lyricPaint.lyricUI.getLyricHorizontalAlign() ==
+            LyricAlign.LEFT
+        ? lyricPaint.lineLeftPadding
+        : 0.0;
     linePaint
       ..text = TextSpan(text: text, style: style)
-      ..layout(maxWidth: (size ?? mSize).width);
+      ..layout(maxWidth: (size ?? mSize).width - leftPad);
     return linePaint;
   }
 

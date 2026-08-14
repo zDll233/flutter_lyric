@@ -180,8 +180,9 @@ class LyricsReaderPaint extends ChangeNotifier implements CustomPainter {
   void paint(Canvas canvas, Size size) {
     //全局尺寸信息
     mSize = size;
-    //溢出裁剪
-    canvas.clipRect(Rect.fromLTRB(0, 0, size.width, size.height));
+    //溢出裁剪 (右侧留余量, 避免文字右缘抗锯齿被裁掉)
+    canvas.clipRect(
+        Rect.fromLTRB(0, 0, size.width + 8, size.height));
     centerY = size.height * lyricUI.getPlayingLineBias();
     var drawOffset = centerY + _lyricOffset;
     var lyrics = model?.lyrics ?? [];
