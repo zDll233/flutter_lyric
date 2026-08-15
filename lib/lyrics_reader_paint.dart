@@ -297,9 +297,16 @@ class LyricsReaderPaint extends ChangeNotifier implements CustomPainter {
     return _drawOtherLyricLine(canvas, drawOffset, element, i);
   }
 
-  ///毫秒 → 时间文本 (与进度文字一致: 超过 1 小时用 H:MM:SS, 否则 MM:SS)
+  ///毫秒 → 时间文本: 超过 1 小时用 H:MM:SS, 否则 MM:SS
+  ///(Duration.toString 小时为 0 也输出 0:MM:SS, 需手动省略)
   String _formatTime(int ms) {
-    return Duration(milliseconds: ms).toString().split('.').first;
+    final d = Duration(milliseconds: ms);
+    if (d.inHours > 0) {
+      return d.toString().split('.').first;
+    }
+    final m = d.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final s = d.inSeconds.remainder(60).toString().padLeft(2, '0');
+    return '$m:$s';
   }
 
   ///命中检测: 返回点击位置 y 对应的歌词行索引, 无命中返回 -1。
