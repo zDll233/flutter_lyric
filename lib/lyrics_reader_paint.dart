@@ -192,9 +192,9 @@ class LyricsReaderPaint extends ChangeNotifier implements CustomPainter {
   void paint(Canvas canvas, Size size) {
     //全局尺寸信息
     mSize = size;
-    //溢出裁剪 (右侧留余量, 避免文字右缘抗锯齿被裁掉)
+    //溢出裁剪 (左侧留出 hover 时间文本区, 右侧留余量避免抗锯齿被裁)
     canvas.clipRect(
-        Rect.fromLTRB(0, 0, size.width + 8, size.height));
+        Rect.fromLTRB(-64, 0, size.width + 8, size.height));
     centerY = size.height * lyricUI.getPlayingLineBias();
     var drawOffset = centerY + _lyricOffset;
     var lyrics = model?.lyrics ?? [];
@@ -215,9 +215,10 @@ class LyricsReaderPaint extends ChangeNotifier implements CustomPainter {
             ),
             textDirection: TextDirection.ltr,
           )..layout();
+          // 时间显示在 hover 框外左侧, 不影响歌词布局
           tp.paint(
             canvas,
-            Offset(hoverRect.left + 6,
+            Offset(hoverRect.left - tp.width - 8,
                 hoverRect.center.dy - tp.height / 2),
           );
         }
