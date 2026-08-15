@@ -38,11 +38,38 @@ class LyricsReader extends StatefulWidget {
   /// 点击某行歌词时回调 (行索引, 该行开始时间)
   final void Function(int lineIndex, Duration startTime)? onTapLine;
 
-  /// hover 歌词行的边框颜色 (null = 不显示)
+  /// hover 歌词行的背景颜色 (null = 不显示)
   final Color? hoverColor;
 
   /// 点击歌词行的涟漪颜色 (null = 不显示)
   final Color? rippleColor;
+
+  /// hover 行背景透明度 (默认 0.08, Material 覆盖层风格)
+  final double hoverOpacity;
+
+  /// 涟漪透明度 (扩散阶段, 默认 0.25)
+  final double rippleOpacity;
+
+  /// 涟漪扩散动画时长 (按住期间持续填充, 默认 600ms)
+  final Duration rippleExpandDuration;
+
+  /// 涟漪抬起补完动画时长 (默认 150ms)
+  final Duration rippleFinishDuration;
+
+  /// 涟漪淡出动画时长 (默认 300ms)
+  final Duration rippleFadeDuration;
+
+  /// 行框 (hover/涟漪裁剪) 圆角 (默认 8)
+  final double cornerRadius;
+
+  /// 左对齐时歌词行的行内左边距 (与行框左缘保持间距, 默认 12)
+  final double lineLeftPadding;
+
+  /// 行框上下边距 (文字上下留白, 默认 12)
+  final double lineRectPadding;
+
+  /// hover 行变化回调 (index 为 -1 表示移出歌词区)
+  final void Function(int lineIndex)? onHoverLineChanged;
 
   final SelectLineBuilder? selectLineBuilder;
   final EmptyBuilder? emptyBuilder;
@@ -70,6 +97,15 @@ class LyricsReader extends StatefulWidget {
     this.onTapLine,
     this.hoverColor,
     this.rippleColor,
+    this.hoverOpacity = 0.08,
+    this.rippleOpacity = 0.25,
+    this.rippleExpandDuration = const Duration(milliseconds: 600),
+    this.rippleFinishDuration = const Duration(milliseconds: 150),
+    this.rippleFadeDuration = const Duration(milliseconds: 300),
+    this.cornerRadius = 8,
+    this.lineLeftPadding = 12,
+    this.lineRectPadding = 12,
+    this.onHoverLineChanged,
     this.playing,
     this.emptyBuilder,
     this.waitMilliseconds = 3000,
@@ -322,16 +358,30 @@ class LyricReaderState extends State<LyricsReader>
 
   @override
   Widget build(BuildContext context) {
-    // 透传 hover/涟漪颜色到绘制层
+    // 透传样式/布局参数到绘制层
     lyricPaint.hoverColor = widget.hoverColor;
     lyricPaint.rippleColor = widget.rippleColor;
+    lyricPaint.hoverOpacity = widget.hoverOpacity;
+    lyricPaint.rippleOpacity = widget.rippleOpacity;
+    lyricPaint.cornerRadius = widget.cornerRadius;
+    lyricPaint.lineLeftPadding = widget.lineLeftPadding;
+    lyricPaint.lineRectPadding = widget.lineRectPadding;
     return MouseRegion(
       onHover: (event) {
         if (widget.model.isNullOrEmpty) return;
-        lyricPaint.hoverLineIndex =
+        final index =
             lyricPaint.getLineIndexAtY(event.localPosition.dy, mSize);
+        if (index != lyricPaint.hoverLineIndex) {
+          lyricPaint.hoverLineIndex = index;
+          widget.onHoverLineChanged?.call(index);
+        }
       },
-      onExit: (_) => lyricPaint.hoverLineIndex = -1,
+      onExit: (_) {
+        if (lyricPaint.hoverLineIndex != -1) {
+          lyricPaint.hoverLineIndex = -1;
+          widget.onHoverLineChanged?.call(-1);
+        }
+      },
       child: buildTouchReader(Stack(
         children: [
           buildReaderWidget(),
@@ -442,7 +492,7 @@ class LyricReaderState extends State<LyricsReader>
               _rippleController?.dispose();
               _rippleController = AnimationController(
                 vsync: this,
-                duration: const Duration(milliseconds: 600),
+                duration: widget.rippleExpandDuration,
               )..addListener(() {
                   lyricPaint.rippleProgress = _rippleController!.value;
                 });
@@ -457,8 +507,8 @@ class LyricReaderState extends State<LyricsReader>
           final ripple = _rippleController;
           if (ripple != null && lyricPaint.pressedLineIndex >= 0) {
             if (ripple.isAnimating) {
-              _rippleController!.animateTo(1,
-                      duration: const Duration(milliseconds: 150))
+              _rippleController!
+                  .animateTo(1, duration: widget.rippleFinishDuration)
                   .then((_) => _fadeRippleOut());
             } else if (ripple.value >= 1) {
               _fadeRippleOut();
@@ -595,7 +645,7 @@ class LyricReaderState extends State<LyricsReader>
     _rippleFadeController?.dispose();
     _rippleFadeController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 300),
+      duration: widget.rippleFadeDuration,
     )
       ..addListener(() {
         lyricPaint.rippleFade = 1 - _rippleFadeController!.value;
@@ -653,7 +703,9 @@ class LyricReaderState extends State<LyricsReader>
     if (!widget.ui.enableHighlight() ||
         widget.playing == null ||
         widget.model.isNullOrEmpty ||
-        lyricPaint.playingIndex >= lyrics!.length) return;
+        lyricPaint.playingIndex >= lyrics!.length) {
+      return;
+    }
     var line = lyrics[lyricPaint.playingIndex];
     List<TweenSequenceItem> items = [];
     var width = 0.0;

@@ -14,16 +14,25 @@ class LyricsReaderPaint extends ChangeNotifier implements CustomPainter {
 
   LyricsReaderPaint(this.model, this.lyricUI);
 
-  ///hover 行边框色 (null = 不显示 hover 效果)
+  ///hover 行背景色 (null = 不显示 hover 效果)
   Color? hoverColor;
 
   ///点击涟漪颜色 (null = 不显示涟漪)
   Color? rippleColor;
 
-  ///左对齐时歌词行的行内左边距 (与 hover 框左缘保持间距)
+  ///hover 行背景透明度
+  double hoverOpacity = 0.08;
+
+  ///涟漪透明度 (扩散阶段)
+  double rippleOpacity = 0.25;
+
+  ///行框 (hover/涟漪裁剪) 圆角
+  double cornerRadius = 8;
+
+  ///左对齐时歌词行的行内左边距 (与行框左缘保持间距)
   double lineLeftPadding = 12;
 
-  ///hover/涟漪框上下边距 (与 [lineLeftPadding] 一致)
+  ///行框上下边距 (文字上下留白)
   double lineRectPadding = 12;
 
   int _hoverLineIndex = -1;
@@ -193,7 +202,7 @@ class LyricsReaderPaint extends ChangeNotifier implements CustomPainter {
       if (hoverColor != null && i == _hoverLineIndex) {
         final hoverRect = getLineRectAt(i, size);
         canvas.drawRRect(hoverRect,
-            Paint()..color = hoverColor!.withValues(alpha: 0.08));
+            Paint()..color = hoverColor!.withValues(alpha: hoverOpacity));
       }
       var lineHeight = drawLine(i, drawOffset, canvas, element);
       var nextOffset = drawOffset + lineHeight;
@@ -221,13 +230,15 @@ class LyricsReaderPaint extends ChangeNotifier implements CustomPainter {
           radius,
           Paint()
               ..color =
-                  rippleColor!.withValues(alpha: 0.25 * _rippleFade));
+                  rippleColor!.withValues(alpha: rippleOpacity * _rippleFade));
       canvas.restore();
     }
   }
 
-  ///计算某行 hover/涟漪框的位置: 文字上下各留 [lineRectPadding] 边距
-  ///(与左对齐行内左边距一致), 水平方向覆盖整个绘制区。
+  ///计算某行 hover/涟漪框的位置: 文字上下各留 [lineRectPadding] 边距,
+  ///水平方向覆盖整个绘制区 (左对齐时歌词从绘制区左端开始)。
+  ///
+  ///与 [getLineIndexAtY] 一起构成行命中/自定义绘制的扩展点。
   RRect getLineRectAt(int index, Size size) {
     mSize = size;
     final centerY = size.height * lyricUI.getPlayingLineBias();
@@ -251,7 +262,7 @@ class LyricsReaderPaint extends ChangeNotifier implements CustomPainter {
         size.width,
         textBottom + lineRectPadding,
       ),
-      const Radius.circular(8),
+      Radius.circular(cornerRadius),
     );
   }
 
@@ -265,7 +276,8 @@ class LyricsReaderPaint extends ChangeNotifier implements CustomPainter {
   }
 
   ///命中检测: 返回点击位置 y 对应的歌词行索引, 无命中返回 -1。
-  ///与 [paint] 的行定位逻辑保持一致 (含滚动偏移)。
+  ///与 [paint] 的行定位逻辑保持一致 (含滚动偏移), 用作点击行/自定义
+  ///交互的扩展点, 与 [getLineRectAt]/[computeLineHeight] 配套使用。
   int getLineIndexAtY(double y, Size size) {
     if (model == null || model!.lyrics.isEmpty) return -1;
     mSize = size;
