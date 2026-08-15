@@ -44,6 +44,9 @@ class LyricsReader extends StatefulWidget {
   /// hover 行左侧起始时间文本颜色 (null = 不显示)
   final Color? hoverTimeColor;
 
+  /// hover 行左侧起始时间字号
+  final double hoverTimeSize;
+
   /// 点击歌词行的涟漪颜色 (null = 不显示)
   final Color? rippleColor;
 
@@ -100,6 +103,7 @@ class LyricsReader extends StatefulWidget {
     this.onTapLine,
     this.hoverColor,
     this.hoverTimeColor,
+    this.hoverTimeSize = 14,
     this.rippleColor,
     this.hoverOpacity = 0.08,
     this.rippleOpacity = 0.25,
@@ -365,6 +369,7 @@ class LyricReaderState extends State<LyricsReader>
     // 透传样式/布局参数到绘制层
     lyricPaint.hoverColor = widget.hoverColor;
     lyricPaint.hoverTimeColor = widget.hoverTimeColor;
+    lyricPaint.hoverTimeSize = widget.hoverTimeSize;
     lyricPaint.rippleColor = widget.rippleColor;
     lyricPaint.hoverOpacity = widget.hoverOpacity;
     lyricPaint.rippleOpacity = widget.rippleOpacity;
