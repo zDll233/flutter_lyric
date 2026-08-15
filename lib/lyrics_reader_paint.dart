@@ -17,6 +17,9 @@ class LyricsReaderPaint extends ChangeNotifier implements CustomPainter {
   ///hover 行背景色 (null = 不显示 hover 效果)
   Color? hoverColor;
 
+  ///hover 行左侧起始时间文本颜色 (null = 不显示)
+  Color? hoverTimeColor;
+
   ///点击涟漪颜色 (null = 不显示涟漪)
   Color? rippleColor;
 
@@ -198,11 +201,26 @@ class LyricsReaderPaint extends ChangeNotifier implements CustomPainter {
     drawOffset -= model?.firstCenterOffset(playingIndex, lyricUI) ?? 0;
     for (var i = 0; i < lyrics.length; i++) {
       var element = lyrics[i];
-      // hover 行的背景 (画在文本下层)
+      // hover 行的背景 (画在文本下层) + 左侧起始时间
       if (hoverColor != null && i == _hoverLineIndex) {
         final hoverRect = getLineRectAt(i, size);
         canvas.drawRRect(hoverRect,
             Paint()..color = hoverColor!.withValues(alpha: hoverOpacity));
+        if (hoverTimeColor != null) {
+          final timeText = _formatTime(element.startTime ?? 0);
+          final tp = TextPainter(
+            text: TextSpan(
+              text: timeText,
+              style: TextStyle(fontSize: 11, color: hoverTimeColor),
+            ),
+            textDirection: TextDirection.ltr,
+          )..layout();
+          tp.paint(
+            canvas,
+            Offset(hoverRect.left + 6,
+                hoverRect.center.dy - tp.height / 2),
+          );
+        }
       }
       var lineHeight = drawLine(i, drawOffset, canvas, element);
       var nextOffset = drawOffset + lineHeight;
@@ -273,6 +291,14 @@ class LyricsReaderPaint extends ChangeNotifier implements CustomPainter {
       return lyricUI.getBlankLineHeight();
     }
     return _drawOtherLyricLine(canvas, drawOffset, element, i);
+  }
+
+  ///毫秒 → MM:SS
+  String _formatTime(int ms) {
+    final totalSec = ms ~/ 1000;
+    final m = (totalSec ~/ 60).toString().padLeft(2, '0');
+    final s = (totalSec % 60).toString().padLeft(2, '0');
+    return '$m:$s';
   }
 
   ///命中检测: 返回点击位置 y 对应的歌词行索引, 无命中返回 -1。
