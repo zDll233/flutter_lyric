@@ -23,6 +23,9 @@ class LyricsReaderPaint extends ChangeNotifier implements CustomPainter {
   ///hover 行左侧起始时间字号
   double hoverTimeSize = 14;
 
+  ///hover 行左侧起始时间字重 (默认 400)
+  int hoverTimeWeight = 400;
+
   ///点击涟漪颜色 (null = 不显示涟漪)
   Color? rippleColor;
 
@@ -214,7 +217,11 @@ class LyricsReaderPaint extends ChangeNotifier implements CustomPainter {
           final tp = TextPainter(
             text: TextSpan(
               text: timeText,
-              style: TextStyle(fontSize: hoverTimeSize, color: hoverTimeColor),
+              style: TextStyle(
+                fontSize: hoverTimeSize,
+                color: hoverTimeColor,
+                fontWeight: FontWeight(hoverTimeWeight),
+              ),
             ),
             textDirection: TextDirection.ltr,
           )..layout();
